@@ -9,8 +9,8 @@ cd "$(dirname "$0")"
 T=${TMPDIR:-/tmp}
 x86_64-w64-mingw32-windres app.rc -O coff -o "$T/fm_window_res.o"
 x86_64-w64-mingw32-g++ -std=c++17 -O1 -g -Wall -Wextra -D_WIN32_WINNT=0x0A00 -DUNICODE -D_UNICODE -static \
-	-I../.. -I../../vncviewer fm_window_test.cpp ../../vncviewer/FileManagerWindow.cpp \
-	../../vncviewer/FileManagerDragDrop.cpp ../../vncviewer/UiText.cpp ../../vncviewer/MediaSettings.cpp ../../common/FileManProto.cpp ../../common/FileManServer.cpp \
+	-I../.. -I../../viewer fm_window_test.cpp ../../viewer/FileManagerWindow.cpp \
+	../../viewer/FileManagerDragDrop.cpp ../../viewer/UiText.cpp ../../viewer/MediaSettings.cpp ../../common/FileManProto.cpp ../../common/FileManServer.cpp \
 	../../common/FileManClient.cpp ../../common/FileTransferQueue.cpp ../../common/ExtChannel.cpp \
 	"$T/fm_window_res.o" -mwindows -municode -lcomctl32 -lshlwapi -lshell32 -lole32 -luuid -lgdi32 \
 	-o "$T/fm_window_test.exe"

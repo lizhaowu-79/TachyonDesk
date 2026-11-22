@@ -17,7 +17,7 @@ set(${PROJECT_NAME}_SOURCES
 )
 add_executable(${PROJECT_NAME})
 foreach(file ${${PROJECT_NAME}_SOURCES})
-    target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/../winvnc/createpassword/${file}")
+    target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/../server/createpassword/${file}")
 endforeach(file)
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/ultravnc)
 if (MSVC)

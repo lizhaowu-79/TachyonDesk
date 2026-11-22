@@ -223,3 +223,10 @@ ultravnc_service/src/.opencppcov/
 vncviewer/vcpkg_installed/
 winvnc/winvnc/vcpkg_installed/
 rdr/vcpkg_installed/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Release packaging output
+dist/

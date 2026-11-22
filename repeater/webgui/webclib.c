@@ -1,14 +1,3 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
-//
-
-
 /* webclib.c
  *
  * Part of the Webio Open Source lightweight web server.
@@ -36,6 +25,9 @@
 #include "webio.h"
 #include "webfs.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 static char output[DDB_SIZE];
 int   ssi_threshhold = DDB_SIZE/2;
@@ -62,13 +54,12 @@ wi_printf(wi_sess * sess, char * fmt, ...)
    }
 
    va_start(a, fmt);
-   vsnprintf(output, sizeof(output), fmt, a);
+   vsprintf(output, fmt, a);
    va_end(a);
-   output[sizeof(output) - 1] = '\0';
 
    /* See if we overflowed the print buffer */
    len = strlen(output);
-   if(len >= sizeof(output) - 1)
+   if((output[DDB_SIZE-1] != 0) || len >= sizeof(output))
    {
       dprintf("wi_printf: overflow, output: %s\n", output);
       panic("wi_printf");
@@ -95,6 +86,100 @@ wi_printf(wi_sess * sess, char * fmt, ...)
       output, len);
    sess->ws_txtail->tb_total += len;
    return;
+}
+
+void
+wi_printf_utf8(wi_sess* sess, char* fmt, ...)
+{
+    int     len;
+    va_list a;
+
+    if (sess->ws_state == WI_ENDING)
+        return;
+
+    /* 防止 fmt 本身过大 */
+    len = (int)strlen(fmt);
+    if (len > sizeof(output) / 2)
+    {
+        dtrap();
+        dprintf("wi_printf_utf8: overflow, fmt: %s\n", fmt);
+        return;
+    }
+
+    /* 1. 先生成 ANSI 字符串 */
+    va_start(a, fmt);
+    vsprintf(output, fmt, a);
+    va_end(a);
+
+    len = (int)strlen(output);
+    if ((output[DDB_SIZE - 1] != 0) || len >= sizeof(output))
+    {
+        dprintf("wi_printf_utf8: overflow, output: %s\n", output);
+        panic("wi_printf_utf8");
+        return;
+    }
+
+    /* ---------- 关键：ANSI -> UTF-8 ---------- */
+
+    /* 2. ANSI -> UTF-16 */
+    WCHAR wbuf[DDB_SIZE];
+    int wlen = MultiByteToWideChar(
+        CP_ACP,
+        0,
+        output,
+        -1,
+        wbuf,
+        DDB_SIZE
+    );
+
+    if (wlen <= 0)
+    {
+        dprintf("wi_printf_utf8: MultiByteToWideChar failed\n");
+        return;
+    }
+
+    /* 3. UTF-16 -> UTF-8（写回 output） */
+    int u8len = WideCharToMultiByte(
+        CP_UTF8,
+        0,
+        wbuf,
+        -1,
+        output,
+        sizeof(output),
+        NULL,
+        NULL
+    );
+
+    if (u8len <= 0)
+    {
+        dprintf("wi_printf_utf8: WideCharToMultiByte failed\n");
+        return;
+    }
+
+    /* UTF-8 实际长度（不含 '\0'） */
+    len = u8len - 1;
+
+    /* ---------- 原有逻辑保持不变 ---------- */
+
+    if (len > sizeof(output) / 2)
+    {
+        dtrap();
+        dprintf("wi_printf_utf8 warning: oversize line: %s", output);
+    }
+
+    if ((sess->ws_txtail == NULL) ||
+        (len >= (WI_TXBUFSIZE - sess->ws_txtail->tb_total)))
+    {
+        if (wi_txalloc(sess) == NULL)
+            return;
+    }
+
+    MEMCPY(
+        &sess->ws_txtail->tb_data[sess->ws_txtail->tb_total],
+        output,
+        len
+    );
+    sess->ws_txtail->tb_total += len;
 }
 
 

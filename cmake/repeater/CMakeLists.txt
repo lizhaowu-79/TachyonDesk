@@ -9,7 +9,7 @@
 # //
 
 
-project(repeater LANGUAGES CXX RC)
+project(TachyonRepeater LANGUAGES CXX RC)
 
 set(${PROJECT_NAME}_SOURCES
     gui.cpp
@@ -38,7 +38,7 @@ target_link_libraries(${PROJECT_NAME}
     winmm
     ws2_32
 )
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/ultravnc)
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/tachyondesk)
 if (MSVC)
-    install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION ${CMAKE_BINARY_DIR}/ultravnc OPTIONAL)
+    install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION ${CMAKE_BINARY_DIR}/tachyondesk OPTIONAL)
 endif()

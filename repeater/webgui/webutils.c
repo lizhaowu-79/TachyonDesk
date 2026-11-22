@@ -1,14 +1,3 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
-//
-
-
 /* webutils.c
  *
  * Part of the Webio Open Source lightweight web server.
@@ -57,26 +46,8 @@ struct httperror {
    401,  "Authentication required",
    402,  "Payment required",
    404,  "File not found",
-   414,  "Request-URI Too Long",
    501,  "Server error",
 };
-
-/* wi_sanitize_uri()
- *
- * Copy src URI into dst, replacing any non-printable or non-ASCII byte
- * with '?', and truncating at dstsz-1 bytes.  Safe to call with NULL src.
- */
-static void
-wi_sanitize_uri(char * dst, size_t dstsz, const char * src)
-{
-   size_t i = 0;
-   if(src)
-   {
-      for(; i < dstsz - 1 && src[i]; i++)
-         dst[i] = ((unsigned char)src[i] >= 0x20 && (unsigned char)src[i] < 0x7F) ? src[i] : '?';
-   }
-   dst[i] = '\0';
-}
 
 /* wi_senderr()
  * 
@@ -89,12 +60,10 @@ int
 wi_senderr(wi_sess * sess, int httpcode )
 {
    int      i;
-   int      remaining;
    char *   cp;
    char *   errortext = "Only buildin pages allowed";
-   char     safe_uri[256];
 
-   for(i = 0; i < (int)(sizeof(httperrors)/sizeof(struct httperror)); i++)
+   for(i = 0; i < (sizeof(httperrors)/sizeof(struct httperror)); i++)
    {
       if(httperrors[i].errcode == httpcode)
       {
@@ -103,58 +72,37 @@ wi_senderr(wi_sess * sess, int httpcode )
       }
    }
 
-   /* Sanitize URI once — never embed raw attacker input into the response */
-   wi_sanitize_uri(safe_uri, sizeof(safe_uri), sess->ws_uri);
-
-#define HDR_REMAINING(cp) (HDRBUFSIZE - (int)((cp) - hdrbuf))
-
-   /* Build a header — all writes bounded to remaining space in hdrbuf */
-   remaining = HDRBUFSIZE;
-   snprintf(hdrbuf, remaining, "HTTP/1.1 %d %s\r\n", httpcode, errortext);
+   /* Build a header */
+   sprintf(hdrbuf, "HTTP/1.1 %d %s\r\n", httpcode, errortext);
    cp = hdrbuf + strlen(hdrbuf);
-
-   remaining = HDR_REMAINING(cp);
-   if(remaining > 1) snprintf(cp, remaining, "Date: %s GMT\r\n", wi_getdate(sess));
+   sprintf(cp, "Date: %s GMT\r\n", wi_getdate(sess) );
    cp += strlen(cp);
-
    if(httpcode == 401)
    {
-      remaining = HDR_REMAINING(cp);
-      if(remaining > 1) snprintf(cp, remaining, "WWW-Authenticate: Basic realm=\"%.200s\"\r\n", safe_uri);
+      sprintf(cp, "WWW-Authenticate: Basic realm=\"%s\"\r\n", sess->ws_uri );
       cp += strlen(cp);
    }
-
-   remaining = HDR_REMAINING(cp);
-   if(remaining > 1) snprintf(cp, remaining, "Server: %s\r\n", wi_servername);
+   sprintf(cp, "Server: %s\r\n", wi_servername );
    cp += strlen(cp);
-
-   remaining = HDR_REMAINING(cp);
-   if(remaining > 1) snprintf(cp, remaining, "Connection: close\r\n\r\n");
+   sprintf(cp, "Connection: close\r\n\r\n");
    cp += strlen(cp);
 
    /* Add some text for browser to display */
-   remaining = HDR_REMAINING(cp);
-   if(remaining > 1) snprintf(cp, remaining, "<html><head><title>Error %d</title></head>\r\n", httpcode);
+   sprintf(cp, "<html><head><title>Error %d</title></head>\r\n", httpcode);
    cp += strlen(cp);
-
-   remaining = HDR_REMAINING(cp);
-   if(remaining > 1) snprintf(cp, remaining, "<body><h2>Error %d: %s<br></h2>\r\n", httpcode, errortext);
+   sprintf(cp, "<body><h2>Error %d: %s<br></h2>\r\n", 
+      httpcode, errortext);
    cp += strlen(cp);
-
-   if(safe_uri[0])
+   if(sess->ws_uri)
    {
-      remaining = HDR_REMAINING(cp);
-      if(remaining > 1) snprintf(cp, remaining, "File: %s<br>\r\n", safe_uri);
+      sprintf(cp, "File: %s<br>\r\n", sess->ws_uri);
       cp += strlen(cp);
    }
 
-   remaining = HDR_REMAINING(cp);
-   if(remaining > 1) snprintf(cp, remaining, "</body></html>\r\n");
+   sprintf(cp, "</body></html>\r\n");
    cp += strlen(cp);
 
-#undef HDR_REMAINING
-
-   send(sess->ws_socket, hdrbuf, (int)(cp - hdrbuf), 0);
+   send(sess->ws_socket, hdrbuf, strlen(hdrbuf), 0);
 
    /* Close socket and mark session for deletion */
    closesocket(sess->ws_socket);
@@ -171,36 +119,21 @@ wi_replyhdr(wi_sess * sess, int contentlen)
    char *   cp;
    int      hdrlen;
    int      error;
-   int      remaining;
 
-#define REPLYHDR_REMAINING(cp) (HDRBUFSIZE - (int)((cp) - hdrbuf))
-
-   snprintf(hdrbuf, HDRBUFSIZE, "HTTP/1.1 200 OK\r\n");
+   sprintf(hdrbuf, "HTTP/1.1 200 OK\r\n");
    cp = hdrbuf + strlen(hdrbuf);
-
-   remaining = REPLYHDR_REMAINING(cp);
-   if(remaining > 1) snprintf(cp, remaining, "Date: %s GMT\r\n", wi_getdate(sess));
+   sprintf(cp, "Date: %s GMT\r\n", wi_getdate(sess) );
+   cp += strlen(cp);
+   sprintf(cp, "Server: %s\r\n", wi_servername );
+   cp += strlen(cp);
+   sprintf(cp, "Connection: close\r\n");
+   cp += strlen(cp);
+   sprintf(cp, "Content-Type: %s\r\n", sess->ws_ftype );
+   cp += strlen(cp);
+   sprintf(cp, "Content-Length: %d\r\n\r\n", contentlen );
    cp += strlen(cp);
 
-   remaining = REPLYHDR_REMAINING(cp);
-   if(remaining > 1) snprintf(cp, remaining, "Server: %s\r\n", wi_servername);
-   cp += strlen(cp);
-
-   remaining = REPLYHDR_REMAINING(cp);
-   if(remaining > 1) snprintf(cp, remaining, "Connection: close\r\n");
-   cp += strlen(cp);
-
-   remaining = REPLYHDR_REMAINING(cp);
-   if(remaining > 1) snprintf(cp, remaining, "Content-Type: %s\r\n", sess->ws_ftype);
-   cp += strlen(cp);
-
-   remaining = REPLYHDR_REMAINING(cp);
-   if(remaining > 1) snprintf(cp, remaining, "Content-Length: %d\r\n\r\n", contentlen);
-   cp += strlen(cp);
-
-#undef REPLYHDR_REMAINING
-
-   hdrlen = (int)(cp - hdrbuf);
+   hdrlen = strlen(hdrbuf);
    error = send(sess->ws_socket, hdrbuf, hdrlen, 0);
    if(error < hdrlen)
    {
@@ -829,7 +762,7 @@ const int pr2six[256]={
 #define BYTE unsigned char
 
 void
-wi_uudecode(char * bufcoded, BYTE * pbuffdecoded, size_t outbufsize)
+wi_uudecode(char * bufcoded, BYTE * pbuffdecoded)
 {
     int     nbytesdecoded;
     char *  bufin;
@@ -848,12 +781,6 @@ wi_uudecode(char * bufcoded, BYTE * pbuffdecoded, size_t outbufsize)
     while(pr2six[*(bufin++)] <= 63);
     nprbytes = (int)(bufin - bufcoded - 1);
     nbytesdecoded = ((nprbytes+3)/4) * 3;
-
-    /* Ensure we don't overflow the output buffer */
-    if ((size_t)nbytesdecoded >= outbufsize) {
-        nbytesdecoded = (int)outbufsize - 1;
-        if (nbytesdecoded < 0) nbytesdecoded = 0;
-    }
 
     bufout = pbuffdecoded;
     bufin = bufcoded;
@@ -876,11 +803,7 @@ wi_uudecode(char * bufcoded, BYTE * pbuffdecoded, size_t outbufsize)
             nbytesdecoded -= 1;
     }
 
-    /* Safe NUL termination within bounds */
-    if ((size_t)nbytesdecoded < outbufsize)
-        pbuffdecoded[nbytesdecoded] = '\0';
-    else if (outbufsize > 0)
-        pbuffdecoded[outbufsize - 1] = '\0';
+    pbuffdecoded[nbytesdecoded] = '\0';
 
     return;
 }
@@ -909,12 +832,12 @@ wi_decode_auth(wi_sess * sess, char * name, int name_len, char * pass, int pass_
    if(wi_tagcmp(sess->ws_auth, "Basic") == 0)
    {
       authdata = sess->ws_auth + strlen("Basic ");
-      if(strlen(authdata) >= sizeof(decode))
+      if(strlen(authdata) > sizeof(decode))
       {
          dtrap();    // crude overflow test failed
          return;
       }
-      wi_uudecode(authdata, (u_char*)(&decode[0]), sizeof(decode));
+      wi_uudecode(authdata, (u_char*)(&decode[0]));
       divide = strchr(decode, ':');
       if(!divide)
       {
@@ -923,8 +846,8 @@ wi_decode_auth(wi_sess * sess, char * name, int name_len, char * pass, int pass_
          return;
       }
       *divide++ = 0;    /* terminte name, point to password */
-      strncpy_s(name, 32, decode, name_len);
-      strncpy_s(pass, 32, divide, pass_len);
+      strncpy(name, decode, name_len);
+      strncpy(pass, divide, pass_len);
    }
    else  /* Add MD5 here later.... */
    {

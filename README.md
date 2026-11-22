@@ -1,144 +1,93 @@
-<!--
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-//
--->
-
-
 <p align="center">
-  <h2 align="center">UltraVNC</h2>
-  <p align="center">Remote Access Tools</p>
-</p>
-<p align="center">
-  <a href="https://uvnc.com/">
-    <img src="https://uvnc.com/images/Viewer1230.png" alt="UltraVNC Viewer" width="250">
-  </a>
-  <br><br>
-  <a href="https://github.com/orgs/ultravnc/followers" target="_blank" rel="noopener"><img src="https://img.shields.io/github/followers/ultravnc?color=%23066da5&label=followers&logo=github&logoColor=%23fff&style=flat-square" alt="UltraVNC GitHub Followers"></a>
-  <a href="https://github.com/ultravnc/UltraVNC/stargazers" target="_blank" rel="noopener"><img src="https://img.shields.io/github/stars/ultravnc/UltraVNC?color=%23066da5&label=stars&logo=github&logoColor=%23fff&style=flat-square" alt="UltraVNC GitHub Stars"></a>
-  <a href="https://github.com/ultravnc/UltraVNC/watchers" target="_blank" rel="noopener"><img src="https://img.shields.io/github/watchers/ultravnc/UltraVNC?color=%23066da5&label=watchers&logo=github&logoColor=%23fff&style=flat-square" alt="UltraVNC GitHub Watchers"></a>
-  <a href="https://github.com/ultravnc/UltraVNC/network" target="_blank" rel="noopener"><img src="https://img.shields.io/github/forks/ultravnc/UltraVNC?color=%23066da5&label=forks&logo=github&logoColor=%23fff&style=flat-square" alt="UltraVNC GitHub Forks"></a>
-  <a href="https://github.com/ultravnc/UltraVNC/graphs/contributors" target="_blank" rel="noopener"><img src="https://img.shields.io/github/contributors/ultravnc/UltraVNC?color=%23066da5&label=contributors&logo=github&logoColor=%23fff&style=flat-square" alt="UltraVNC GitHub Contributors"></a>
-  <a href="https://github.com/ultravnc/UltraVNC/tags" target="_blank" rel="noopener"><img src="https://img.shields.io/github/v/tag/ultravnc/UltraVNC?color=%23066da5&label=tag&logo=github&logoColor=%23fff&style=flat-square" alt="UltraVNC GitHub Tags"></a>
-  <a href="https://github.com/ultravnc/UltraVNC/blob/main/LICENSE" target="_blank" rel="noopener"><img src="https://img.shields.io/github/license/ultravnc/UltraVNC?color=%23066da5&label=license&logo=github&logoColor=%23fff&style=flat-square" alt="UltraVNC GitHub License"></a>
-  <a href="https://github.com/ultravnc/UltraVNC" target="_blank" rel="noopener"><img src="https://img.shields.io/github/last-commit/ultravnc/UltraVNC/main?color=%23066da5&label=last%20commit&logo=github&logoColor=%23fff&style=flat-square" alt="UltraVNC GitHub Last Commit"></a>
-</p>
-
-<a href="https://uvnc.com/">UltraVNC</a> is a powerful, easy to use and free - remote pc access softwares - that can display the screen of another computer (via internet or network) on your own screen. The program allows you to use your mouse and keyboard to control the other PC remotely. It means that you can work on a remote computer, as if you were sitting in front of it, right from your current location.
-
-VNC, the Remote Frame Buffer protocol (RFB) allows a desktop to be viewed and controlled remotely over the Internet. A VNC Server must be run on the computer sharing the desktop, a VNC client must be run on the computer that will access the shared desktop.
-
----
-
-### Supported operating systems
-- 🔗 Windows 7, 8, 8.1, 10, 11, Server 2008 R2, Server 2012, Server 2012 R2, Server 2016, Server 2019, Server 2022, Server 2025: current version: https://uvnc.com/downloads/ultravnc.html
-- 🔗 Windows XP, Windows Server 2003, Vista, Server 2003 R2, Server 2008: latest version: https://uvnc.com/downloads/ultravnc/129-download-ultravnc-1231.html
-- 🔗 Windows 2000: latest version: https://uvnc.eu/download/1215/Ultravnc_w2k_1215.zip
-- 🔗 Windows 95**, 98**, Me**, NT4**: latest version: https://uvnc.eu/download/102/
-
-Its embedded JavaViewer allows you to connect (and make File transfers) from a simple Web Browser on any system supporting Java (Linux, Mac OS, ...) to an UltraVNC Server.
-PcHelpWare and uvnc2me require XP or later.
-
-<p align="center">
-  <a href="https://en.wikipedia.org/wiki/C_(programming_language)" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white" alt="C"></a>
-  <a href="https://en.wikipedia.org/wiki/C%2B%2B" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/C%2B%2B-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++"></a>
-  <a href="https://www.java.com/" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java"></a>
-</p>
-
-<p align="center">UltraVNC Viewer works with all VNC Servers<br><br>
-  <a href="https://www.microsoft.com/windows/" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Microsoft Windows"></a>
-  <a href="https://www.linux.org/" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Linux"></a>
-  <a href="https://www.apple.com/macos/" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=macos&logoColor=F0F0F0" alt="Apple MacOS"></a>
-</p>
-
-<p align="center">UltraVNC Server works on Microsoft Windows OS<br><br>
-  <a href="https://www.microsoft.com/windows/" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Microsoft Windows"></a>
+  <h1 align="center">TachyonDesk</h1>
+  <p align="center">
+    High-performance, single-port Windows remote desktop with GPU video streaming, single-window control, remote audio, and modern file transfer.
+  </p>
+  <p align="center">
+    <a href="README_CN.md">简体中文</a> ·
+    <a href="BUILDING.md">Build Guide</a> ·
+    <a href="SECURITY.md">Security</a> ·
+    <a href="PORTABLE_MODE.md">Portable &amp; Service Modes</a> ·
+    <a href="docs/design.md">Architecture Design (CN)</a>
+  </p>
 </p>
 
 ---
 
-### Compatibility
-All VNC flavors follow the RFB protocol. This common start point means that most of the VNC flavours available today "usually" talk nicely together, allowing for easy cross platform desktop sharing to occur.
-PcHelpWare and uvnc2me are not RFB compatible.
+## Overview
 
----
+**TachyonDesk** is an open-source Windows remote desktop suite (Server, Viewer, and Repeater) forked from [UltraVNC](https://github.com/ultravnc/UltraVNC) (baseline `7bd294a`) and licensed under **GPL-3.0-or-later**.
 
-### Remote PC Access Software
-If you provide computer support, you can quickly access your customer's computers from anywhere in the world and resolve helpdesk issues remotely! With addons like Single Click (SC) your customers don't even have to pre-install software or execute complex procedures to get remote helpdesk support.
+While preserving full compatibility with the standard RFB (VNC) protocol and single-TCP-port deployment, TachyonDesk adds a negotiated **multiplexed extension channel** (`rfbExtMsg`) with priority scheduling (Audio > Control > Video > Bulk) to deliver modern remote desktop capabilities over a single port—without breaking interoperability with standard VNC clients or servers.
 
----
+## Key Features
 
-### Who Should Use UltraVNC
-Anyone who needs to support local or remote Windows users will find UltraVNC Products are must-have tools UltraVNC Products have been specifically designed to answer the needs of:
-- 📌 Help Desk (Internal/External)
-- 📌 IT departments
-- 📌 Remote Computer Support companies
-- 📌 Remote Computer Access
-- 📌 Remote demonstration
-- 📌 eLearning, classroom control
-- 📌 Individuals that want to help their relatives and friends, or access their home PC from work or cybercafes
+### Core Components
+- **TachyonDesk Server (`TachyonServer.exe`)**: Windows desktop & service host (`TachyonDeskService`), supporting hybrid, portable (`tachyon.portable`), and system-service configuration modes.
+- **TachyonDesk Viewer (`TachyonViewer.exe`)**: Native Win32 remote client with Simplified/Traditional Chinese & English UI support for all extended features.
+- **TachyonDesk Repeater (`TachyonRepeater.exe`)**: Standalone relay server supporting Mode I/II reverse connections and automatic server-side reconnection (`[auto_reverse]`).
 
----
+### Extended Capabilities (Single TCP Port)
+| Feature | Description | Status |
+|---|---|---|
+| **Multiplexed Extension Channel** | Capability-negotiated `rfbExtMsg` channel with 64 KB chunking, 4-level priority queues, and RTT measurement. | Stable |
+| **Bidirectional Lazy File Clipboard** | `Ctrl+C` / `Ctrl+V` files & folders between local and remote Explorer via OLE virtual files (`IStream`), streamed on demand with native progress & cancellation. | Stable |
+| **GPU Video Mode (H.264 / HEVC / AV1)** | DXGI Desktop Duplication zero-copy capture + NVIDIA NVENC hardware encoding (with Media Foundation H.264 fallback for non-NVIDIA GPUs), AIMD adaptive bitrate control, remote cursor shape sync, and D3D11VA hardware decoding. | Stable (H.264/HEVC) / Experimental (AV1 & MF H.264) |
+| **Single-Window Remote Control** | Capture and control a single remote window (WGC / `PrintWindow` + popup menu/dialog compositing + input filtering) in lossless zstd tile mode or NVENC video mode. | Stable |
+| **Remote Audio** | WASAPI loopback capture (with optional remote local mute) + Media Foundation AAC-LC encoding + adaptive jitter-buffered playback. | Stable |
+| **Modern File Manager & File-Only Mode** | Dual-pane local/remote file manager, transfer queue, resume interrupted transfers (`~tachyon-*.part`), drag remote items directly to local Explorer, and `/filemode` (no framebuffer traffic). | Stable (Core) / Experimental (Resume & Explorer DnD) |
+| **Media Settings & Auto-Restore** | Configurable max bitrate, FPS (30/60/120), codec preference, audio bitrate, and automatic video/audio restoration after reconnect. | Experimental |
+| **Auto Reverse Repeater** | Server-side automatic reverse connection & reconnect loop to `TachyonRepeater` via `tachyon.ini` (`[auto_reverse]`) or CLI flags. | Stable |
 
-### About Us
-We are a small team of highly motivated and cool people :-)
-Our goal is to make the more powerful, user-friendly and no-brainer free Remote Control software available.
+## Quick Start
 
-<a href="https://uvnc.com/">UltraVNC</a> is Free and distributed under the terms of the <a href="https://github.com/ultravnc/UltraVNC/blob/main/LICENSE">GNU General Public License</a>.
+### 1. Portable Mode
+Create an empty file named `tachyon.portable` next to `TachyonServer.exe` to store `tachyon.ini` directly in the application folder. See [PORTABLE_MODE.md](PORTABLE_MODE.md) for hybrid and service-mode details.
 
-The UltraVNC project is born in 2002, the first UltraVNC version has been released 2002-12-05, following the merger of two projects:
-- Vdacc-VNC started by Rudi De Vos in 1999
-- eSVNC started by Sam in 2002
+### 2. File-Transfer-Only Mode
+Launch `TachyonViewer.exe /filemode` (or check **File transfer only** in the connection dialog) to connect directly to the dual-pane file manager without requesting screen updates or sending keyboard/mouse input.
 
-The UltraVNC team is made up of two people:
-- Rudi De Vos
-- Ludovic Bocquet
+### 3. Automatic Reverse Connection (Repeater)
+Add the following section to `tachyon.ini` on the server:
+```ini
+[auto_reverse]
+AutoReverseEnabled=1
+AutoReverseRepeaterHost=your-repeater-host
+AutoReverseRepeaterPort=5500
+AutoReverseId=ID:123456
+AutoReverseReconnectInterval=5
+```
+Or pass CLI flags in application mode:
+```text
+TachyonServer.exe -autoreverse -repeater your-repeater-host:5500 -id:123456 -reconnect 5 -run
+```
 
-Contact:
-- 📫 uvnc@skynet.be
-- 💬 For technical questions, use the <a href="https://forum.uvnc.com/">FORUM</a> or <a href="https://github.com/ultravnc/UltraVNC/issues">GitHub</a> first.
+## Building from Source
 
----
+TachyonDesk targets **Windows 10 / 11 (x64)** with **Visual Studio 2022 or newer** (C++ desktop workload).
 
-### Our links
-- 🚩 [Website](https://uvnc.com/)
-- 🚩 [Forum](https://forum.uvnc.com/)
-- 🚩 [GitHub](https://github.com/ultravnc)
-- 🚩 [GitHub Issues](https://github.com/ultravnc/UltraVNC/issues)
-- 🚩 [GitHub Pull requests](https://github.com/ultravnc/UltraVNC/pulls)
-- 🚩 [Mastodon/Fediverse](https://mastodon.social/@ultravnc)
-- 🚩 [Bluesky/AT Protocol](https://bsky.app/profile/ultravnc.bsky.social)
-- 🚩 [Facebook](https://www.facebook.com/ultravnc1)
-- 🚩 [X/Twitter](https://x.com/ultravnc1)
-- 🚩 [Reddit](https://www.reddit.com/r/ultravnc)
-- 🚩 [OpenHub](https://openhub.net/p/ultravnc)
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build.ps1
+```
 
----
+Build outputs are placed in `build\bin\x64\Release\`. For full requirements, toolset options, and vcpkg notes, see [BUILDING.md](BUILDING.md).
 
-### Compile and build in Visual Studio
-- 🛠️ Visual Studio: 2017 | 2019 | 2022
-- 🛠️ Netwide Assembler (NASM): https://nasm.us/
-- ⚙️ vncviewer.sln to build UltraVNC Viewer
-- ⚙️ winvnc.sln to build UltraVNC Server
+## Roadmap
 
----
+- [ ] **AI Agent Remote Computer Control (High Priority)** — Expose a structured, permission-scoped interface (e.g., MCP / local API) allowing AI agents to inspect the remote screen or target window, perform mouse/keyboard actions, and transfer files safely with human-in-the-loop oversight
+- [ ] **Complete non-NVIDIA hardware encoding** (AMD AMF / Intel QSV / Media Foundation H.264 & HEVC stabilization)
+- [ ] **Optional UDP video transport** (same port number as TCP, with FEC / lower latency on lossy networks)
+- [ ] **Microphone redirection** (Viewer -> Server audio channel)
+- [ ] **Multi-monitor switching in Video Mode** & smoother DPI/HDR handling
+- [ ] **CI/CD & Automated Release Packaging** (GitHub Actions + signed/portable x64 releases)
+- [ ] **Cross-platform Viewer exploration** (Linux / macOS client supporting the `rfbExtMsg` protocol)
 
-<div align="center">
-  Copyright ©️ 2002-2025 <a href="https://uvnc.com/">UltraVNC</a> Team Members. All Rights Reserved.
-</div>
+## Security
 
----
+If you expose TachyonDesk over the public internet, **always enable transport encryption** (TLS / RSA-AES / DSM plugin) or tunnel through a VPN. Please read [SECURITY.md](SECURITY.md) before deploying in production or service mode.
 
-<p align="center">
-  <a href="https://github.com/ultravnc" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white" alt="UltraVNC GitHub"></a>
-  <a href="https://mastodon.social/@ultravnc" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/mastodon-black?style=for-the-badge&logo=mastodon" alt="UltraVNC Mastodon"></a>
-  <a href="https://bsky.app/profile/ultravnc.bsky.social" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/Bluesky-0285FF?style=for-the-badge&logo=Bluesky&logoColor=white" alt="UltraVNC Bluesky"></a>
-  <a href="https://www.facebook.com/Ultravnc1" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/Facebook-%231877F2.svg?style=for-the-badge&logo=Facebook&logoColor=white" alt="UltraVNC Facebook"></a>
-  <a href="https://x.com/ultravnc1" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/X-%23000000.svg?style=for-the-badge&logo=X&logoColor=white" alt="UltraVNC X/Twitter"></a>
-  <a href="https://www.reddit.com/r/ultravnc" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/Reddit-000?style=for-the-badge&logo=reddit&logoColor=FF4500" alt="UltraVNC Reddit"></a>
-</p>
+## License & Acknowledgments
+
+TachyonDesk is free software distributed under the **GNU General Public License v3.0 or later** ([LICENSE](LICENSE)).
+
+TachyonDesk is derived from [UltraVNC](https://github.com/ultravnc/UltraVNC) (Copyright © 2002–2025 UltraVNC Team Members, and 1999–2002 Vdacc-VNC & eSVNC Projects). All upstream copyright notices and GPL headers are preserved in the source tree.

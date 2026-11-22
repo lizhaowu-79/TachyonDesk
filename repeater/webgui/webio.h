@@ -1,14 +1,3 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
-//
-
-
 /* webio.h
  *
  * Part of the Webio Open Source lightweight web server.
@@ -183,7 +172,6 @@ extern char hdrbuf[HDRBUFSIZE];   /* For building HTTP headers */
 
 extern   char *      wi_servername;
 
-extern   int         wi_localhost;   /* set to 1 to restrict web GUI to local connections only */
 extern   int         wi_init(void);
 extern   int         wi_poll(void);
 extern   int         wi_thread(void);
@@ -198,6 +186,7 @@ extern   wi_sess *   wi_newsess(void);
 extern   void        wi_delsess( wi_sess *);
 
 extern   void        wi_printf(wi_sess * sess, char * fmt, ...);
+extern   void        wi_printf_utf8(wi_sess * sess, char * fmt, ...);
 extern   int         wi_readfile(struct wi_sess_s * sess);
 extern   int         wi_sockwrite(struct wi_sess_s * sess);
 extern   int         wi_sockaccept(void);

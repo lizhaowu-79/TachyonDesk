@@ -13,9 +13,9 @@
 #include <windows.h>
 #include "win32_helpers.h"
 #ifdef _VIEWER
-#include "../vncviewer/res/resource.h"
+#include "../viewer/res/resource.h"
 #else
-#include "../winvnc/winvnc/resource.h"
+#include "../server/server/resource.h"
 #endif
 
 namespace helper {

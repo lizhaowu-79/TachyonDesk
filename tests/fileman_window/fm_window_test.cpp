@@ -158,7 +158,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 	WriteFileBytes(remote + L"\\\x5408\x540C.docx", 98765); // 合同.docx
 	DeleteFileW((remote + L"\\video.mp4").c_str());
 	HKEY key;
-	RegCreateKeyExW(HKEY_CURRENT_USER, L"Software\\UltraVNC\\Viewer\\FileTransferWindow", 0, NULL, 0, KEY_WRITE, NULL,
+	RegCreateKeyExW(HKEY_CURRENT_USER, L"Software\\TachyonDesk\\Viewer\\FileTransferWindow", 0, NULL, 0, KEY_WRITE, NULL,
 		&key, NULL);
 	RegSetValueExW(key, L"LocalFolder", 0, REG_SZ, reinterpret_cast<const BYTE*>(local.c_str()),
 		static_cast<DWORD>((local.size() + 1) * 2));

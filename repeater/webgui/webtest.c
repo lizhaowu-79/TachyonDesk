@@ -1,15 +1,4 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
-//
-
-
-/* webio.c
+﻿/* webio.c
  *
  * Part of the Webio Open Source lightweight web server.
  *
@@ -58,10 +47,10 @@ int saved_usecom=0;
 int saved_allow;
 int saved_refuse;
 int saved_refuse2;
-char saved_sample1[1025];
-char saved_sample2[1025];
-char saved_sample3[1025];
-char saved_password[65]= {"admin"};
+char saved_sample1[1024];
+char saved_sample2[1024];
+char saved_sample3[1024];
+char saved_password[64]= {"admin"};
 void Save_settings();
 
 extern void	exit(int code);
@@ -114,10 +103,7 @@ DWORD WINAPI ThreadStartWeb(LPVOID lpParam)
 
 
 
-		wi_localhost = 1;   /* admin interface is local-only */
 		error = wi_init();
-
-		/* Password is displayed in MessageBox on first run (settings.c) */
 		old_port=saved_portHTTP;
 		while (error<0)
 		{
@@ -129,8 +115,8 @@ DWORD WINAPI ThreadStartWeb(LPVOID lpParam)
 		if (old_port!=saved_portHTTP)
 		{
 			char text[200];
-			sprintf_s(text, 200, "The defined web port is already in use.\nChanged to http://localhost:%i\n\nVerify settings!\nUser: admin, Password set on first run.",saved_portHTTP);
-			MessageBox(NULL,text,"UltraVNC Repeater: Warning",MB_ICONEXCLAMATION);
+			sprintf(text,"The defined web port is already in use. \nChanged to http://localhost:%i \nVerify settings!\n Default user and password is admin.",saved_portHTTP);
+			MessageBox(NULL,text,"UltraVnc Repeater: Warning",MB_ICONEXCLAMATION);
 		}
 		/* Install our port-local authentication routine */
 		emfs.wfs_fauth = wfs_auth;
@@ -366,25 +352,25 @@ memory_ssi(wi_sess * sess, EOFILE * eofile)
 
 
    /* print memory stats to the session's TX buffers */
-   wi_printf(sess, "Hostname:  %s <br>", szHostName );
+   wi_printf_utf8(sess, "主机名称:  %s <br>", szHostName );
 
 	while (remoteHost->h_addr_list[i] != 0) {
                 addr.s_addr = *(u_long *) remoteHost->h_addr_list[i++];
-                wi_printf(sess, "IP Address #%d: %s <br>", i, inet_ntoa(addr));
+				wi_printf_utf8(sess, "IP 地址 #%d: %s <br>", i, inet_ntoa(addr));
 	}
-	wi_printf(sess, "Listen Port Viewer: %i<br>", saved_portA);
-	wi_printf(sess, "Listen Port Server: %i<br>", saved_portB);
-	wi_printf(sess, "Web Server        : %i<br>", saved_portHTTP);
-	wi_printf(sess, "Use comment as extra viewer check: %i<br>", saved_usecom);
+	wi_printf_utf8(sess, "查看器连接端口: %i<br>", saved_portA);
+	wi_printf_utf8(sess, "服务器连接端口: %i<br>", saved_portB);
+	wi_printf_utf8(sess, "Web 页面端口        : %i<br>", saved_portHTTP);
+	wi_printf_utf8(sess, "使用备注作为查看器检查: %i<br>", saved_usecom);
    wi_printf(sess, "<br>");
 
-   wi_printf(sess, "Connections: <br>");
+   wi_printf_utf8(sess, "已连接: <br>");
    list_connections(sess,txt);
    
-   wi_printf(sess, "Waiting servers:  <br>");
+   wi_printf_utf8(sess, "等待中的服务器:  <br>");
    list_servers(sess,txt);
    
-    wi_printf(sess, "Waiting viewers:  <br>" );
+   wi_printf_utf8(sess, "等待中的查看器:  <br>" );
    list_viewers(sess,txt);
    
    return 0;      /* OK return code */
@@ -442,8 +428,8 @@ testaction3_cgi(wi_sess * sess,  EOFILE * eofile)
 	{
 	   char idnr[50];
 	   char commentnr[50];
-	   sprintf_s(idnr,50,"%s%i","id",i);
-	   sprintf_s(commentnr,50, "%s%i","comment",i);
+	   sprintf (idnr,"%s%i","id",i);
+	   sprintf (commentnr,"%s%i","comment",i);
 	   id = wi_formvalue(sess, idnr);  
 	   comment = wi_formvalue(sess, commentnr); 
 	   if (id && comment) 
@@ -502,8 +488,8 @@ listcomment_ssi(wi_sess * sess, EOFILE * eofile)
 			char pg[]="\" type=\"text\" value=\"";
 			char gg[]="\" style=\"width: 450px\"></td>";
  			char h[]="</tr>";
-			if (comment[i].comment) sprintf_s(txt, 1000, "%s%s%s%s%i%s%i%s%s%s%s%i%s%s%s%s",a,b,c,d,i,pd,comment[i].code,dd,e,f,g,i,pg,comment[i].comment,gg,h);
-			else sprintf_s(txt,1000, "%s%s%s%s%i%s%i%s%s%s%s%i%s%s%s%s",a,b,c,d,i,pd,comment[i].code,dd,e,f,g,i,pg,"",gg,h);
+			if (comment[i].comment) sprintf(txt,"%s%s%s%s%i%s%i%s%s%s%s%i%s%s%s%s",a,b,c,d,i,pd,comment[i].code,dd,e,f,g,i,pg,comment[i].comment,gg,h);
+			else sprintf(txt,"%s%s%s%s%i%s%i%s%s%s%s%i%s%s%s%s",a,b,c,d,i,pd,comment[i].code,dd,e,f,g,i,pg,"",gg,h);
 			wi_printf(sess, "%s", txt);
 		}
 	}
@@ -522,8 +508,8 @@ connections_ssi(wi_sess * sess, EOFILE * eofile)
 					{
 						char* p = strrchr(szFileName, '\\');
 						*p = '\0';
-						strcat_s(szFileName, 260, "\\");
-						strcat_s(szFileName, 260, "connections.txt");
+						strcat (szFileName,"\\");
+						strcat (szFileName,"connections.txt");
 					}
 
 	if ((f = fopen((LPCSTR)szFileName, "r")) != NULL)
@@ -549,8 +535,8 @@ server_access_ssi(wi_sess * sess, EOFILE * eofile)
 					{
 						char* p = strrchr(szFileName, '\\');
 						*p = '\0';
-						strcat_s(szFileName,260,"\\");
-						strcat_s(szFileName,260,"server_access.txt");
+						strcat (szFileName,"\\");
+						strcat (szFileName,"server_access.txt");
 					}
 
 	if ((f = fopen((LPCSTR)szFileName, "r")) != NULL)
@@ -576,8 +562,8 @@ viewer_access_ssi(wi_sess * sess, EOFILE * eofile)
 					{
 						char* p = strrchr(szFileName, '\\');
 						*p = '\0';
-						strcat_s(szFileName,260,"\\");
-						strcat_s(szFileName,260,"viewer_access.txt");
+						strcat (szFileName,"\\");
+						strcat (szFileName,"viewer_access.txt");
 					}
 
 	if ((f = fopen((LPCSTR)szFileName, "r")) != NULL)
@@ -595,7 +581,7 @@ viewer_access_ssi(wi_sess * sess, EOFILE * eofile)
 /* testaction_cgi
  * Stub routine for form processing
  * 
- * Returns????
+ * Returns ????
  */
 
 char username[512];
@@ -641,22 +627,22 @@ testaction_cgi(wi_sess * sess,  EOFILE * eofile)
    if (allow_on) saved_allow=true;
    else saved_allow=false;
    allow_con = wi_formvalue(sess, "allow_con");
-   if (allow_con) strcpy_s(saved_sample1, 1024, allow_con);
-   else strcpy_s(saved_sample1, 1024, "");
+   if (allow_con) strcpy(saved_sample1,allow_con);
+   else strcpy(saved_sample1,"");
 
    refuse_on = wi_formvalue(sess, "refuse_on");  
    if (refuse_on) saved_refuse=true;
    else saved_refuse=false;
    refuse_con = wi_formvalue(sess, "refuse_con"); 
-   if (refuse_con) strcpy_s(saved_sample2, 1024, refuse_con);
-   else strcpy_s(saved_sample2, 1024, "");
+   if (refuse_con) strcpy(saved_sample2,refuse_con);
+   else strcpy(saved_sample2,"");
 
    id_on = wi_formvalue(sess, "id_on");  
    if (id_on) saved_refuse2=true;
    else saved_refuse2=false;
    id_con = wi_formvalue(sess, "id_con");  
-    if (id_con) strcpy_s(saved_sample3, 1024, id_con);
-   else strcpy_s(saved_sample3, 1024, "");
+    if (id_con) strcpy(saved_sample3,id_con);
+   else strcpy(saved_sample3,"");
 //#endif
    ucom_on = wi_formvalue(sess, "ucom_on");  
    if (ucom_on) saved_usecom=true;

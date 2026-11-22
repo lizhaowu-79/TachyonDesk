@@ -142,7 +142,7 @@ static std::vector<uint8_t> RandomBytes(size_t n, unsigned seed)
 	return v;
 }
 
-// No "~uvnc-*.part" left anywhere below dir.
+// No "~tachyon-*.part" left anywhere below dir.
 static int CountTempFiles(const std::string& dir)
 {
 	int n = 0;
@@ -156,7 +156,7 @@ static int CountTempFiles(const std::string& dir)
 			continue;
 		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			n += CountTempFiles(JoinPath(dir, name));
-		else if (name.rfind("~uvnc-", 0) == 0)
+		else if (name.rfind("~tachyon-", 0) == 0)
 			++n;
 	} while (FindNextFileW(f, &fd));
 	FindClose(f);
@@ -369,7 +369,7 @@ static void TestTransfers()
 static void DeleteTempFiles(const std::string& dir)
 {
 	WIN32_FIND_DATAW fd;
-	HANDLE f = FindFirstFileW(W(JoinPath(dir, "~uvnc-*.part")).c_str(), &fd);
+	HANDLE f = FindFirstFileW(W(JoinPath(dir, "~tachyon-*.part")).c_str(), &fd);
 	if (f == INVALID_HANDLE_VALUE)
 		return;
 	do

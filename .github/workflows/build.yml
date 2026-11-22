@@ -1,0 +1,45 @@
+name: Build (Windows x64)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Verify UI translation table is up to date
+        shell: pwsh
+        run: |
+          python viewer/uitext/gen.py
+          git diff --exit-code viewer/UiTextTable.inc
+
+      - name: Build TachyonDesk (Release | x64)
+        shell: pwsh
+        run: |
+          powershell -ExecutionPolicy Bypass -File .\build.ps1
+
+      - name: Stage build artifacts
+        shell: pwsh
+        run: |
+          $stage = "dist\TachyonDesk-win-x64"
+          New-Item -ItemType Directory -Force $stage | Out-Null
+          Copy-Item "build\bin\x64\Release\*.exe" $stage
+          Copy-Item "build\bin\x64\Release\*.dll" $stage
+          Copy-Item "LICENSE", "README.md", "README_CN.md", "PORTABLE_MODE.md" $stage
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TachyonDesk-win-x64
+          path: dist/TachyonDesk-win-x64
+          retention-days: 14

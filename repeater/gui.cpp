@@ -1,14 +1,24 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
+/////////////////////////////////////////////////////////////////////////////
+//  Copyright (C) 2002 Ultr@VNC Team Members. All Rights Reserved.
 //
-// SPDX-License-Identifier: GPL-3.0-or-later
 //
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
+//  The VNC system is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
 //
-
-
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+//  USA.
+//
+//
+/////////////////////////////////////////////////////////////////////////////
 #include <setjmp.h>
 #include <windows.h>
 #include <windowsx.h>
@@ -133,21 +143,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     GetModuleFileName(0, exe_file_name, MAX_PATH);
 
     /* set current directory */
-    strcpy_s(dir, exe_file_name);
+    strcpy(dir, exe_file_name);
     ptr=strrchr(dir, '\\'); /* last backslash */
     if(ptr)
         ptr[1]='\0'; /* truncate program name */
     if(!SetCurrentDirectory(dir)) {
         MessageBox(hwnd, "Cannot set current directory",
-            "UltraVNC", MB_ICONERROR);
+            "TachyonDesk Repeater", MB_ICONERROR);
         return 1;
     }
 
     /* setup service_path for CreateService() */
-    strcpy_s(service_path, "\"");
-    strcat_s(service_path, exe_file_name);
-    strcat_s(service_path, "\" -service");
-    /* strcat_s(service_path, lpszCmdLine); */
+    strcpy(service_path, "\"");
+    strcat(service_path, exe_file_name);
+    strcat(service_path, "\" -service");
+    /* strcat(service_path, lpszCmdLine); */
 
     if(!_strcmpi(lpszCmdLine, "-service")) {
         if(!setjmp(jump_buf))
@@ -183,7 +193,7 @@ static int win_main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     WNDCLASSEX wc;
     MSG msg;
-    char classname[]="UltraVNC_Repeater";
+    char classname[]="TachyonDesk Repeater";
     RECT rect;
 
     /* register the class */
@@ -208,7 +218,7 @@ static int win_main(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         hpopup=GetSubMenu(htraymenu, 0);
     }
     hmainmenu=LoadMenu(ghInst, MAKEINTRESOURCE(IDM_MAINMENU));
-    hwnd=CreateWindow(classname, "UltraVNC_Repeater", WS_TILEDWINDOW,
+    hwnd=CreateWindow(classname, "TachyonDesk Repeater", WS_TILEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
         NULL, hmainmenu, hInstance, NULL);
 
@@ -249,9 +259,9 @@ static void update_taskbar(void) { /* create the taskbar icon */
     nid.hWnd=hwnd; /* window to receive notifications */
     nid.uID=1;     /* application-defined ID for icon */
     if(error_mode)
-        strcpy_s(nid.szTip, "Server is down");
+        strcpy(nid.szTip, "Server is down");
     else
-        strcpy_s(nid.szTip, "UltraVNC Repeater");
+        strcpy(nid.szTip, "TachyonDesk Repeater");
     nid.uFlags=NIF_TIP;
     /* only nid.szTip and nid.uID are valid, change tip */
     if(Shell_NotifyIcon(NIM_MODIFY, &nid)) /* modify tooltip */
@@ -336,7 +346,7 @@ static LRESULT CALLBACK wndProc(HWND hwnd_local, UINT message, WPARAM wParam, LP
             break;
         case IDM_SETUP:
             MessageBox(hwnd_local, "Function not implemented",
-                "UltraVNC_Repeater", MB_ICONERROR);
+                "TachyonDesk Repeater", MB_ICONERROR);
             break;
         };
         return TRUE;
@@ -376,13 +386,12 @@ static LRESULT CALLBACK settings_proc(HWND hDlg, UINT message,
 			allow=saved_allow;
 			refuse=saved_refuse;
 			refuse2=saved_refuse2;
-			strcpy_s(sample1,saved_sample1);
-			strcpy_s(sample2,saved_sample2);
-			strcpy_s(sample3,saved_sample3);
-			_itoa_s(portA, tempchar, 10);
-			SetDlgItemText(hDlg, IDC_ACCEPTPORT, tempchar);
-			_itoa_s(portB,tempchar,10);
-			SetDlgItemText(hDlg, IDC_LISTENPORT, tempchar);
+			strcpy(sample1,saved_sample1);
+			strcpy(sample2,saved_sample2);
+			strcpy(sample3,saved_sample3);
+
+			SetDlgItemText(hDlg, IDC_ACCEPTPORT, _itoa(portA,tempchar,10));
+			SetDlgItemText(hDlg, IDC_LISTENPORT, _itoa(portB,tempchar,10));
 			SendDlgItemMessage(hDlg, IDC_ENABLE,BM_SETCHECK,mode2,0);
 			SendDlgItemMessage(hDlg, IDC_ENABLE2,BM_SETCHECK,mode1,0);
 			SendDlgItemMessage(hDlg, IDC_KEEPALIVE,BM_SETCHECK,keepalive,0);
@@ -394,8 +403,7 @@ static LRESULT CALLBACK settings_proc(HWND hDlg, UINT message,
 			SetDlgItemText(hDlg, IDC_EDITALLOW, sample1);
 			SetDlgItemText(hDlg, IDC_EDITREFUSE, sample2);
 			SetDlgItemText(hDlg, IDC_EDITREFUSE2, sample3);
-			_itoa_s(portS,tempchar,10);
-			SetDlgItemText(hDlg, IDC_PORTSERVER, tempchar);
+			SetDlgItemText(hDlg, IDC_PORTSERVER, _itoa(portS,tempchar,10));
 
 			if (mode2)
 				{
@@ -495,9 +503,9 @@ static LRESULT CALLBACK settings_proc(HWND hDlg, UINT message,
 					saved_allow=allow;
 					saved_refuse=refuse;
 					saved_refuse2=refuse2;
-					strcpy_s(saved_sample1,sample1);
-					strcpy_s(saved_sample2,sample2);
-					strcpy_s(saved_sample3,sample3);
+					strcpy(saved_sample1,sample1);
+					strcpy(saved_sample2,sample2);
+					strcpy(saved_sample3,sample3);
 					Save_settings();
 					win_log("Settings Saved: WARNING, new settings become active after restart !");
                 case IDCANCEL:
@@ -587,7 +595,7 @@ static void save_file(HWND hwnd_local) {
     if((hFile=CreateFile((LPCSTR)szFileName, GENERIC_WRITE,
             0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
             (HANDLE) NULL))==INVALID_HANDLE_VALUE) {
-        MessageBox(hwnd_local, "File open failed", "UltraVNC_Repeater", MB_ICONERROR);
+        MessageBox(hwnd_local, "File open failed", "TachyonDesk Repeater", MB_ICONERROR);
         return;
     }
     CloseHandle(hFile);
@@ -607,13 +615,13 @@ static void set_visible(int i) {
 
 static int start_service(void) {
     SERVICE_TABLE_ENTRY serviceTable[]={
-        {"repeater_service", service_main},
+        {"TachyonRepeaterService", service_main},
         {0, 0}
     };
 
     if(!StartServiceCtrlDispatcher(serviceTable)) {
         MessageBox(hwnd, "Unable to start the service",
-            "repeater_service", MB_ICONERROR);
+            "TachyonRepeaterService", MB_ICONERROR);
         return 1;
     }
     return 0; /* NT service started */
@@ -625,21 +633,21 @@ static int install_service(void) {
     scm=OpenSCManager(0, 0, SC_MANAGER_CREATE_SERVICE);
     if(!scm) {
         MessageBox(hwnd, "Failed to open service control manager",
-            "repeater_service", MB_ICONERROR);
+            "TachyonRepeaterService", MB_ICONERROR);
         return 1;
     }
     service=CreateService(scm,
-        "repeater_service", "repeater_service", SERVICE_ALL_ACCESS,
+        "TachyonRepeaterService", "TachyonRepeaterService", SERVICE_ALL_ACCESS,
         SERVICE_WIN32_OWN_PROCESS | SERVICE_INTERACTIVE_PROCESS,
         SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, service_path,
         NULL, NULL, NULL, NULL, NULL);
     if(!service) {
         MessageBox(hwnd, "Failed to create a new service",
-            "repeater_service", MB_ICONERROR);
+            "TachyonRepeaterService", MB_ICONERROR);
         CloseServiceHandle(scm);
         return 1;
     }
-    MessageBox(hwnd, "Service installed", "repeater_service",
+    MessageBox(hwnd, "Service installed", "TachyonRepeaterService",
         MB_ICONINFORMATION);
     CloseServiceHandle(service);
     CloseServiceHandle(scm);
@@ -653,39 +661,39 @@ static int uninstall_service(void) {
     scm=OpenSCManager(0, 0, SC_MANAGER_CONNECT);
     if(!scm) {
         MessageBox(hwnd, "Failed to open service control manager",
-            "repeater_service", MB_ICONERROR);
+            "TachyonRepeaterService", MB_ICONERROR);
         return 1;
     }
-    service=OpenService(scm, "repeater_service",
+    service=OpenService(scm, "TachyonRepeaterService",
         SERVICE_QUERY_STATUS | DELETE);
     if(!service) {
         MessageBox(hwnd, "Failed to open the service",
-            "repeater_service", MB_ICONERROR);
+            "TachyonRepeaterService", MB_ICONERROR);
         CloseServiceHandle(scm);
         return 1;
     }
     if(!QueryServiceStatus(service, &serviceStatus_local)) {
         MessageBox(hwnd, "Failed to query service status",
-            "repeater_service", MB_ICONERROR);
+            "TachyonRepeaterService", MB_ICONERROR);
         CloseServiceHandle(service);
         CloseServiceHandle(scm);
         return 1;
     }
     if(serviceStatus_local.dwCurrentState!=SERVICE_STOPPED) {
         MessageBox(hwnd, "The service is still running",
-            "repeater_service", MB_ICONERROR);
+            "TachyonRepeaterService", MB_ICONERROR);
         CloseServiceHandle(service);
         CloseServiceHandle(scm);
         return 1;
     }
     if(!DeleteService(service)) {
         MessageBox(hwnd, "Failed to delete the service",
-            "repeater_service", MB_ICONERROR);
+            "TachyonRepeaterService", MB_ICONERROR);
         CloseServiceHandle(service);
         CloseServiceHandle(scm);
         return 1;
     }
-    MessageBox(hwnd, "Service uninstalled", "repeater_service",
+    MessageBox(hwnd, "Service uninstalled", "TachyonRepeaterService",
         MB_ICONINFORMATION);
     CloseServiceHandle(service);
     CloseServiceHandle(scm);
@@ -703,7 +711,7 @@ static void WINAPI service_main(DWORD argc, LPTSTR* argv) {
     serviceStatus.dwWaitHint=0;
 
     serviceStatusHandle=
-        RegisterServiceCtrlHandler("repeater_service", control_handler);
+        RegisterServiceCtrlHandler("TachyonRepeaterService", control_handler);
 
     if(serviceStatusHandle) {
         /* service is starting */

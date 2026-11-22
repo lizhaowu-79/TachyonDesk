@@ -98,7 +98,7 @@ static void TestRequests()
 	CHECK(t1 != ResumeTempName("C:\\Data\\A.bin", 101, 5));
 	CHECK(t1 != ResumeTempName("C:\\Data\\A.bin", 100, 6));
 	CHECK(t1 != ResumeTempName("C:\\Data\\B.bin", 100, 5));
-	CHECK(t1.size() == 27 && t1.rfind("~uvnc-", 0) == 0 && t1.substr(22) == ".part");
+	CHECK(t1.size() == 30 && t1.rfind("~tachyon-", 0) == 0 && t1.substr(25) == ".part");
 
 	std::vector<uint8_t> bytes(1000, 0xAB);
 	b = EncodeWrite(WriteHeader{ 2, 77 }, bytes.data(), bytes.size());

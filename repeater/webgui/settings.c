@@ -1,56 +1,14 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
-//
-
-
 #include <stdio.h>
 #include <setjmp.h>
-#include <limits.h>
 #include <windows.h>
 #include <windowsx.h>
 #include <shellapi.h>
 #include <string.h>
-#include <time.h>
 #include "websys.h"
 #include "webio.h"
 #include "webfs.h"
 #include "wsfdata.h"
 #include "webgui.h"
-
-/* Generate a random password for first-run setup */
-static void GenerateRandomPassword(char* password, int length)
-{
-    static const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    HCRYPTPROV hProv;
-    BYTE randomByte;
-    int i;
-    
-    /* Try to use Windows CryptoAPI for secure randomness */
-    if (CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
-        for (i = 0; i < length; i++) {
-            if (CryptGenRandom(hProv, 1, &randomByte)) {
-                password[i] = charset[randomByte % (sizeof(charset) - 1)];
-            } else {
-                /* Fallback to rand() if CryptoGenRandom fails */
-                password[i] = charset[rand() % (sizeof(charset) - 1)];
-            }
-        }
-        CryptReleaseContext(hProv, 0);
-    } else {
-        /* Fallback to rand() seeded with time */
-        srand((unsigned int)time(NULL));
-        for (i = 0; i < length; i++) {
-            password[i] = charset[rand() % (sizeof(charset) - 1)];
-        }
-    }
-    password[length] = '\0';
-}
 
 extern int saved_mode2;
 extern int saved_mode1;
@@ -64,16 +22,16 @@ extern int saved_usecom;
 extern int saved_allow;
 extern int saved_refuse;
 extern int saved_refuse2;
-extern char saved_sample1[1025];
-extern char saved_sample2[1025];
-extern char saved_sample3[1025];
+extern char saved_sample1[1024];
+extern char saved_sample2[1024];
+extern char saved_sample3[1024];
 extern char temp1[50][25];
 extern char temp2[50][16];
 extern char temp3[50][16];
 extern int rule1;
 extern int rule2;
 extern int rule3;
-extern char saved_password[65];
+extern char saved_password[64];
 CRITICAL_SECTION cs;
 
 void Save_settings();
@@ -97,7 +55,7 @@ void Read_comment()
 					{
 						char* p = strrchr(myInifile, '\\');
 						*p = '\0';
-						strcat_s(myInifile, 260, "\\comment.txt");
+						strcat (myInifile,"\\comment.txt");
 					}
 	for (i=0;i<MAX_LIST*2;i++)
 	{
@@ -106,21 +64,20 @@ void Read_comment()
 		char temp2[256];
 		char seps[]   = ":";
 		char *token;
-		char *next_token = NULL;
 
 		comment[i].code=0;
 		memset(comment[i].comment,0,256);
 
 		memset(temp2,0,256);
-		sprintf_s(temp, 10, "%i",i);
+		sprintf(temp,"%i",i);
 		ReadString("comment", temp,temp2,256);
-		token = strtok_s( temp2, seps , &next_token);
+		token = strtok( temp2, seps );
 		if ( token != NULL )
 		{
 			int a=0;
 			comment[i].code=atol(token);
 		}
-		token = strtok_s( NULL, seps,  &next_token);
+		token = strtok( NULL, seps );
 		if ( token != NULL )
 		{
 			strcpy_s(comment[i].comment,256,token);
@@ -135,15 +92,15 @@ void Save_comment()
 					{
 						char* p = strrchr(myInifile, '\\');
 						*p = '\0';
-						strcat_s(myInifile, 260, "\\comment.txt");
+						strcat (myInifile,"\\comment.txt");
 					}
 	for (i=0;i<MAX_LIST*2;i++)
 	{
 		char temp[10];
 		char temp3[10];
 		char temp2[256];
-		sprintf_s(temp,10, "%i",i);
-		sprintf_s(temp3, 10, "%u",comment[i].code);
+		sprintf(temp,"%i",i);
+		sprintf(temp3,"%u",comment[i].code);
 		strcpy_s(temp2,256,temp3);
 		strcat_s(temp2,256,":");
 		strcat_s(temp2,256,comment[i].comment);
@@ -207,7 +164,7 @@ Read_settings()
 					{
 						char* p = strrchr(szFileName, '\\');
 						*p = '\0';
-						strcat_s(szFileName, 260, "\\settings2.txt");
+						strcat (szFileName,"\\settings2.txt");
 					}
 	hFile=CreateFile((LPCSTR)szFileName, GENERIC_READ,
             0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
@@ -222,19 +179,13 @@ Read_settings()
 		saved_allow=1;
 		saved_refuse=0;
 		saved_refuse2=0;
-		strcpy_s(saved_sample1, 1024, "");
-		strcpy_s(saved_sample2, 1024,"");
-		strcpy_s(saved_sample3, 1024,"");
-		GenerateRandomPassword(saved_password, 12);
+		strcpy(saved_sample1,"");
+		strcpy(saved_sample2,"");
+		strcpy(saved_sample3,"");
+		strcpy(saved_password,"adminadmi2");
 		saved_portHTTP=80;
 		saved_usecom=0;
 		Save_settings();
-		/* Show password on first run - GUI app has no console */
-		{
-			char msg[512];
-			sprintf_s(msg, 512, "UltraVNC Repeater first run configuration saved.\n\nConnect to: http://localhost:%d/\nUser: admin\nPassword: %s\n\nPlease save this password. It will not be shown again.", saved_portHTTP, saved_password);
-			MessageBox(NULL, msg, "UltraVNC Repeater - Admin Password", MB_OK | MB_ICONINFORMATION);
-		}
 	}
 	else
 	{
@@ -253,13 +204,9 @@ Read_settings()
 		ReadFile(hFile,&saved_refuse2,sizeof(int),&readbytes,NULL);
 
 		ReadFile(hFile,saved_sample1,1024,&readbytes,NULL);
-		saved_sample1[readbytes < 1024 ? readbytes : 1024] = '\0';
 		ReadFile(hFile,saved_sample2,1024,&readbytes,NULL);
-		saved_sample2[readbytes < 1024 ? readbytes : 1024] = '\0';
 		ReadFile(hFile,saved_sample3,1024,&readbytes,NULL);
-		saved_sample3[readbytes < 1024 ? readbytes : 1024] = '\0';
 		ReadFile(hFile,saved_password,64,&readbytes,NULL);
-		saved_password[readbytes < 64 ? readbytes : 64] = '\0';
 		ReadFile(hFile,&saved_portHTTP,sizeof(int),&readbytes,NULL);
 		ReadFile(hFile,&saved_usecom,sizeof(int),&readbytes,NULL);
 		
@@ -269,33 +216,27 @@ Read_settings()
 		while (test)
 		{
 		int len=test-pos;
-		if (len >= 25) len = 24;
-		strncpy_s(temp1[rule1], 25, pos,len);
+		strncpy(temp1[rule1],pos,len);
 		temp1[rule1][len]=0;
 		rule1++;
-		if (rule1 > 48)
-			break;
 		pos+=len+1;
 		test=strchr(pos,ch);
 		}
-		strcpy_s(temp1[rule1], 25, pos);
+		strcpy(temp1[rule1],pos);
 		rule1++;
 
-		test=strchr(saved_sample2, ch);
+		test=strchr(saved_sample2,ch);
 		pos=saved_sample2;
 		while (test)
 		{
 		int len=test-pos;
-		if (len >= 16) len = 15;
-		strncpy_s(temp2[rule2], 16, pos,len);
+		strncpy(temp2[rule2],pos,len);
 		temp2[rule2][len]=0;
 		rule2++;
-		if (rule2 > 48)
-			break;
 		pos+=len+1;
 		test=strchr(pos,ch);
 		}
-		strcpy_s(temp2[rule2], 16,pos);
+		strcpy(temp2[rule2],pos);
 		rule2++;
 
 		test=strchr(saved_sample3,ch);
@@ -303,16 +244,13 @@ Read_settings()
 		while (test)
 		{
 		int len=test-pos;
-		if (len >= 16) len = 15;
-		strncpy_s(temp3[rule3], 16,pos,len);
+		strncpy(temp3[rule3],pos,len);
 		temp3[rule3][len]=0;
 		rule3++;
-		if (rule3 > 48)
-			break;
 		pos+=len+1;
 		test=strchr(pos,ch);
 		}
-		strcpy_s(temp3[rule3], 16,pos);
+		strcpy(temp3[rule3],pos);
 		rule3++;
 
 		CloseHandle(hFile);
@@ -329,7 +267,7 @@ Save_settings()
 					{
 						char* p = strrchr(szFileName, '\\');
 						*p = '\0';
-						strcat_s(szFileName,260, "\\settings2.txt");
+						strcat (szFileName,"\\settings2.txt");
 					}
 	hFile=CreateFile((LPCSTR)szFileName, GENERIC_WRITE,
             0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
@@ -376,16 +314,10 @@ void win_log(char *line) {
     int len;
     static int log_len=0;
 	EnterCriticalSection(&cs);
-    len=(int)strlen(line);
-    if(len > 512) len = 512;   /* cap log line length */
-    /* Defensive: ensure malloc size doesn't overflow */
-    if (len > INT_MAX - (int)sizeof(struct LIST) - 1) {
-        LeaveCriticalSection(&cs);
-        return;
-    }
-    curr=(struct LIST *)malloc(sizeof(struct LIST)+len+1);  /* +1 for null terminator */
+    len=strlen(line);
+    curr=(struct LIST *)malloc(sizeof(struct LIST)+len);
     curr->len=len;
-    strcpy_s(curr->txt, len+1, line);
+    strcpy(curr->txt, line);
     curr->next=NULL;
 
     if(tail)
@@ -434,22 +366,22 @@ list_servers(wi_sess * sess,char *txt)
 {
 	char temp[10];
 	int i;
-	strcpy_s(txt, 4000, "<table class=\"style2\" style=\"width: 800px\">");
+	strcpy(txt,"<table class=\"style2\" style=\"width: 800px\">");
 	strcat_s(txt,4000,"<tr>");
-		strcat_s(txt,4000,"<td style=\"width: 40px; height: 23px\" class=\"style3\">Slot</td>");
-		strcat_s(txt,4000,"<td style=\"width: 160px; height: 23px\" class=\"style3\">Time</td>");
-		strcat_s(txt,4000,"<td style=\"width: 90px; height: 23px\" class=\"style3\">ID nummer</td>");
-		strcat_s(txt,4000,"<td style=\"width: 150px; height: 23px\" class=\"style3\">Connection from</td>");
-		strcat_s(txt,4000,"<td style=\"width: 250px; height: 23px\" class=\"style3\">comment</td>");
+		strcat_s(txt,4000,"<td style=\"width: 40px; height: 23px\" class=\"style3\">通道</td>");
+		strcat_s(txt,4000,"<td style=\"width: 160px; height: 23px\" class=\"style3\">时间</td>");
+		strcat_s(txt,4000,"<td style=\"width: 90px; height: 23px\" class=\"style3\">ID 号</td>");
+		strcat_s(txt,4000,"<td style=\"width: 150px; height: 23px\" class=\"style3\">连接自</td>");
+		strcat_s(txt,4000,"<td style=\"width: 250px; height: 23px\" class=\"style3\">备注</td>");
 	strcat_s(txt,4000,"</tr>");
-	wi_printf(sess, "%s", txt );
+	wi_printf_utf8(sess, "%s", txt );
 
 	for (i=0;i<MAX_LIST;i++)
 	{
 		if (Servers[i].code!=0 && Servers[i].used==0) 
 		{
 			strcpy_s(txt,4000,"<tr>");
-			_itoa_s(i,temp,10, 10);
+			_itoa(i,temp,10);
 			strcat_s(txt,4000,"<td style=\"width: 40px; height: 23px\"class=\"style3\">");
 			strcat_s(txt,4000,temp);	
 			strcat_s(txt,4000,"</td>");
@@ -458,7 +390,7 @@ list_servers(wi_sess * sess,char *txt)
 			strcat_s(txt,4000,Servers[i].time);	
 			strcat_s(txt,4000,"</td>");
 
-			_itoa_s(Servers[i].code,temp,10, 10);
+			_itoa(Servers[i].code,temp,10);
 			strcat_s(txt,4000,"<td style=\"width: 90px; height: 23px\"class=\"style3\">");
 			strcat_s(txt,4000,temp);	
 			strcat_s(txt,4000,"</td>");
@@ -474,7 +406,7 @@ list_servers(wi_sess * sess,char *txt)
 			wi_printf(sess, "%s", txt );
 		}
 	}
-	strcpy_s(txt, 4000, "</table>");
+	strcpy(txt,"</table>");
 	wi_printf(sess, "%s", txt );
 
 }
@@ -484,22 +416,22 @@ list_viewers(wi_sess * sess,char *txt)
 {
 	char temp[10];
 	int i;
-	strcpy_s(txt, 4000, "<table class=\"style2\" style=\"width: 800px\">");
+	strcpy(txt,"<table class=\"style2\" style=\"width: 800px\">");
 	strcat_s(txt,4000,"<tr>");
-		strcat_s(txt,4000,"<td style=\"width: 40px; height: 23px\" class=\"style3\">Slot</td>");
-		strcat_s(txt,4000,"<td style=\"width: 160px; height: 23px\" class=\"style3\">Time</td>");
-		strcat_s(txt,4000,"<td style=\"width: 90px; height: 23px\" class=\"style3\">ID nummer</td>");
-		strcat_s(txt,4000,"<td style=\"width: 150px; height: 23px\" class=\"style3\">Connection from</td>");
-		strcat_s(txt,4000,"<td style=\"width: 250px; height: 23px\" class=\"style3\">comment</td>");
+		strcat_s(txt,4000,"<td style=\"width: 40px; height: 23px\" class=\"style3\">通道</td>");
+		strcat_s(txt,4000,"<td style=\"width: 160px; height: 23px\" class=\"style3\">时间</td>");
+		strcat_s(txt,4000,"<td style=\"width: 90px; height: 23px\" class=\"style3\">ID 号</td>");
+		strcat_s(txt,4000,"<td style=\"width: 150px; height: 23px\" class=\"style3\">连接自</td>");
+		strcat_s(txt,4000,"<td style=\"width: 250px; height: 23px\" class=\"style3\">备注</td>");
 	strcat_s(txt,4000,"</tr>");
-	wi_printf(sess, "%s", txt );
+	wi_printf_utf8(sess, "%s", txt );
 
 	for (i=0;i<MAX_LIST;i++)
 	{
 		if (Viewers[i].code!=0 && Viewers[i].used==0) 
 		{
 			strcpy_s(txt,4000,"<tr>");
-			_itoa_s(i,temp,10, 10);
+			_itoa(i,temp,10);
 			strcat_s(txt,4000,"<td style=\"width: 40px; height: 23px\" class=\"style3\" >");
 			strcat_s(txt,4000,temp);	
 			strcat_s(txt,4000,"</td>");
@@ -508,7 +440,7 @@ list_viewers(wi_sess * sess,char *txt)
 			strcat_s(txt,4000,Viewers[i].time);	
 			strcat_s(txt,4000,"</td>");
 
-			_itoa_s(Viewers[i].code,temp,10, 10);
+			_itoa(Viewers[i].code,temp,10);
 			strcat_s(txt,4000,"<td style=\"width: 90px; height: 23px\" class=\"style3\" >");
 			strcat_s(txt,4000,temp);	
 			strcat_s(txt,4000,"</td>");
@@ -524,7 +456,7 @@ list_viewers(wi_sess * sess,char *txt)
 			wi_printf(sess, "%s", txt );
 		}
 	}
-	strcpy_s(txt, 4000, "</table>");
+	strcpy(txt,"</table>");
 	wi_printf(sess, "%s", txt );
 
 }
@@ -535,25 +467,25 @@ list_connections(wi_sess * sess,char *txt)
 	char temp[10];
 	int i;
 	int j;
-	strcpy_s(txt, 4000, "<table class=\"style2\" style=\"width: 800px\">");
+	strcpy(txt,"<table class=\"style2\" style=\"width: 800px\">");
 	strcat_s(txt,4000,"<tr>");
-		strcat_s(txt,4000,"<td style=\"width: 40px; height: 23px\" class=\"style3\">Slot</td>");
-		strcat_s(txt,4000,"<td style=\"width: 160px; height: 23px\" class=\"style3\">Time</td>");
-		strcat_s(txt,4000,"<td style=\"width: 90px; height: 23px\" class=\"style3\">ID nummer</td>");
-		strcat_s(txt,4000,"<td style=\"width: 200px; height: 23px\" class=\"style3\">Viewer</td>");
-		strcat_s(txt,4000,"<td style=\"width: 200px; height: 23px\" class=\"style3\">Server</td>");
-		strcat_s(txt,4000,"<td style=\"width: 75px; height: 23px\" class=\"style3\">Total kb</td>");
+		strcat_s(txt,4000,"<td style=\"width: 40px; height: 23px\" class=\"style3\">通道</td>");
+		strcat_s(txt,4000,"<td style=\"width: 160px; height: 23px\" class=\"style3\">时间</td>");
+		strcat_s(txt,4000,"<td style=\"width: 90px; height: 23px\" class=\"style3\">ID 号</td>");
+		strcat_s(txt,4000,"<td style=\"width: 200px; height: 23px\" class=\"style3\">查看器</td>");
+		strcat_s(txt,4000,"<td style=\"width: 200px; height: 23px\" class=\"style3\">服务器</td>");
+		strcat_s(txt,4000,"<td style=\"width: 75px; height: 23px\" class=\"style3\">总共 kb</td>");
 		strcat_s(txt,4000,"<td style=\"width: 75px; height: 23px\" class=\"style3\">kb/s</td>");
-		strcat_s(txt,4000,"<td style=\"width: 250px; height: 23px\" class=\"style3\">comment</td>");
+		strcat_s(txt,4000,"<td style=\"width: 250px; height: 23px\" class=\"style3\">备注</td>");
 	strcat_s(txt,4000,"</tr>");
-	wi_printf(sess, "%s", txt );
-	strcpy_s(txt, 4000, "");
+	wi_printf_utf8(sess, "%s", txt );
+	strcpy(txt,"");
 	for (i=0;i<MAX_LIST;i++)
 	{
 		if (Viewers[i].code!=0 && Viewers[i].used!=0) 
 		{
 			strcpy_s(txt,4000,"<tr>");
-			_itoa_s(i,temp,10, 10);
+			_itoa(i,temp,10);
 			strcat_s(txt,4000,"<td style=\"width: 40px; height: 23px\"class=\"style3\">");
 			strcat_s(txt,4000,temp);	
 			strcat_s(txt,4000,"</td>");
@@ -562,7 +494,7 @@ list_connections(wi_sess * sess,char *txt)
 			strcat_s(txt,4000,Viewers[i].time);	
 			strcat_s(txt,4000,"</td>");
 
-			_itoa_s(Viewers[i].code,temp,10, 10);
+			_itoa(Viewers[i].code,temp,10);
 			strcat_s(txt,4000,"<td style=\"width: 90px; height: 23px\"class=\"style3\">");
 			strcat_s(txt,4000,temp);	
 			strcat_s(txt,4000,"</td>");
@@ -581,12 +513,12 @@ list_connections(wi_sess * sess,char *txt)
 				}
 			}
 
-			_itoa_s(Viewers[i].recvbytes/1000,temp,10, 10);
+			_itoa(Viewers[i].recvbytes/1000,temp,10);
 			strcat_s(txt,4000,"<td style=\"width: 75px; height: 23px\"class=\"style3\">");
 			strcat_s(txt,4000,temp);	
 			strcat_s(txt,4000,"</td>");
 
-			_itoa_s(Viewers[i].average,temp, 10, 10);
+			_itoa(Viewers[i].average,temp,10);
 			strcat_s(txt,4000,"<td style=\"width: 75px; height: 23px\"class=\"style3\">");
 			strcat_s(txt,4000,temp);	
 			strcat_s(txt,4000,"</td>");
@@ -597,10 +529,10 @@ list_connections(wi_sess * sess,char *txt)
 
 			strcat_s(txt,4000,"</tr>");
 			wi_printf(sess, "%s", txt );
-			strcpy_s(txt, 4000, "");
+			strcpy(txt,"");
 		}
 	}
-	strcpy_s(txt, 4000, "</table>");
+	strcpy(txt,"</table>");
 	wi_printf(sess, "%s", txt );
-	strcpy_s(txt, 4000, "");
+	strcpy(txt,"");
 }

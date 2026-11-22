@@ -17,7 +17,7 @@
 //
 // Wine has no HEVC or AV1 decoder; run those on Windows (see run.sh).
 
-#include "../../vncviewer/VideoDecoder.h"
+#include "../../viewer/VideoDecoder.h"
 #include "../../common/VideoProto.h"
 
 #include <cstdio>

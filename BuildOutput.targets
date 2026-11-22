@@ -1,9 +1,9 @@
 <Project>
   <!-- Imported after project settings so hard-coded relative output paths are overridden. -->
   <PropertyGroup>
-    <IntDir>$(AabbccBuildRoot)obj\$(MSBuildProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>$(AabbccBuildRoot)bin\$(Platform)\$(Configuration)\</OutDir>
-    <VcpkgInstalledDir>$(AabbccBuildRoot)vcpkg_installed\</VcpkgInstalledDir>
+    <IntDir>$(TachyonBuildRoot)obj\$(MSBuildProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(TachyonBuildRoot)bin\$(Platform)\$(Configuration)\</OutDir>
+    <VcpkgInstalledDir>$(TachyonBuildRoot)vcpkg_installed\</VcpkgInstalledDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -19,7 +19,7 @@
     <Bscmake><OutputFile>$(IntDir)$(TargetName).bsc</OutputFile></Bscmake>
     <Link><ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile></Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(MSBuildProjectName)' == 'vncviewer' Or '$(MSBuildProjectName)' == 'winvnc'">
+  <ItemDefinitionGroup Condition="'$(MSBuildProjectName)' == 'TachyonViewer' Or '$(MSBuildProjectName)' == 'TachyonServer'">
     <PreLinkEvent>
       <Command>cl /nologo /MT /Fo"$(IntDir)buildtime.obj" /Fd"$(IntDir)buildtime.pdb" /c buildtime.cpp</Command>
     </PreLinkEvent>
@@ -48,44 +48,44 @@ popd</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <!-- Use the vendored x64 Release packages without invoking vcpkg. -->
-  <PropertyGroup Condition="'$(AabbccDependencyRoot)' != '' And '$(Platform)|$(Configuration)' == 'x64|Release'">
+  <PropertyGroup Condition="'$(TachyonDependencyRoot)' != '' And '$(Platform)|$(Configuration)' == 'x64|Release'">
     <VcpkgEnabled>false</VcpkgEnabled>
     <VcpkgEnableManifest>false</VcpkgEnableManifest>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(AabbccDependencyRoot)' != '' And '$(Platform)|$(Configuration)' == 'x64|Release'">
-    <ClCompile><AdditionalIncludeDirectories>$(AabbccDependencyRoot)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories></ClCompile>
+  <ItemDefinitionGroup Condition="'$(TachyonDependencyRoot)' != '' And '$(Platform)|$(Configuration)' == 'x64|Release'">
+    <ClCompile><AdditionalIncludeDirectories>$(TachyonDependencyRoot)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories></ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(AabbccDependencyRoot)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(TachyonDependencyRoot)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>zlib.lib;zstd.lib;lzma.lib;jpeg.lib;turbojpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <!-- OSGeo4W's static minizip-ng library uses the DLL C runtime. -->
+  <!-- Vendored static minizip-ng library uses the DLL C runtime. -->
   <ItemDefinitionGroup Condition="'$(Platform)|$(Configuration)' == 'x64|Release'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(AabbccSodiumRoot)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TachyonSodiumRoot)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(AabbccSodiumRoot)x64\Release\v143\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(TachyonSodiumRoot)x64\Release\v143\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libsodium.lib;libminizip.lib;bz2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64' And ('$(MSBuildProjectName)' == 'vncviewer' Or '$(MSBuildProjectName)' == 'winvnc')">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64' And ('$(MSBuildProjectName)' == 'TachyonViewer' Or '$(MSBuildProjectName)' == 'TachyonServer')">
     <PreLinkEvent>
       <Command>cl /nologo /MD /Fo"$(IntDir)buildtime.obj" /Fd"$(IntDir)buildtime.pdb" /c buildtime.cpp</Command>
     </PreLinkEvent>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64' And '$(MSBuildProjectName)' == 'vncviewer'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64' And '$(MSBuildProjectName)' == 'TachyonViewer'">
     <Link>
       <AdditionalDependencies>yuv.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <Target Name="AabbccCopyRuntimeDependencies" AfterTargets="Link"
-          Condition="'$(Configuration)|$(Platform)' == 'Release|x64' And ('$(MSBuildProjectName)' == 'vncviewer' Or '$(MSBuildProjectName)' == 'winvnc')">
+  <Target Name="TachyonCopyRuntimeDependencies" AfterTargets="Link"
+          Condition="'$(Configuration)|$(Platform)' == 'Release|x64' And ('$(MSBuildProjectName)' == 'TachyonViewer' Or '$(MSBuildProjectName)' == 'TachyonServer')">
     <ItemGroup>
-      <AabbccRuntimeDll Include="$(AabbccSodiumRoot)x64\Release\v143\dynamic\libsodium.dll" />
-      <AabbccRuntimeDll Include="$(AabbccDependencyRoot)bin\bz2.dll;$(AabbccDependencyRoot)bin\zlib1.dll;$(AabbccDependencyRoot)bin\zstd.dll;$(AabbccDependencyRoot)bin\liblzma.dll;$(AabbccDependencyRoot)bin\jpeg62.dll" />
+      <TachyonRuntimeDll Include="$(TachyonSodiumRoot)x64\Release\v143\dynamic\libsodium.dll" />
+      <TachyonRuntimeDll Include="$(TachyonDependencyRoot)bin\bz2.dll;$(TachyonDependencyRoot)bin\zlib1.dll;$(TachyonDependencyRoot)bin\zstd.dll;$(TachyonDependencyRoot)bin\liblzma.dll;$(TachyonDependencyRoot)bin\jpeg62.dll" />
     </ItemGroup>
-    <Copy SourceFiles="@(AabbccRuntimeDll)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(TachyonRuntimeDll)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
   </Target>
 </Project>

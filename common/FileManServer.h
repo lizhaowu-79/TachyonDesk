@@ -131,7 +131,7 @@ std::string Win32Message(DWORD error);
 uint64_t FileTimeToU64(const FILETIME& ft);
 FILETIME U64ToFileTime(uint64_t v);
 uint32_t AttributesToWire(DWORD attributes);
-// Delete "~uvnc-*.part" files older than a week in a folder (with a
+// Delete "~tachyon-*.part" files older than a week in a folder (with a
 // trailing backslash): partial transfers nobody came back for.
 void PurgeOldPartFiles(const std::wstring& folder);
 

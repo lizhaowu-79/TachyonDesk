@@ -1,14 +1,3 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
-//
-
-
 #include "repeater.h"
 
 HANDLE hserver_listen=NULL;
@@ -87,14 +76,14 @@ DWORD WINAPI server_listen(LPVOID lpParam)
 				int i = 0;  // disable
 				setsockopt (connection, SOL_SOCKET, SO_RCVTIMEO, (char*) &i, sizeof(i));
 				setsockopt (connection, SOL_SOCKET, SO_SNDTIMEO, (char*) &i, sizeof(i));
-			if (!ParseDisplay(proxyadress, 255, remotehost, 255, &remoteport))
+			if (!ParseDisplay(proxyadress, remotehost, 255, &remoteport))
 			{
 				shutdown(sock_server_listen, 2);
 				closesocket(connection);
 				continue;
 			}
 
-			strcpy_s(dest_host,remotehost);
+			strcpy(dest_host,remotehost);
 			dest_port=remoteport;
 			shutdown(sock_server_listen, 2);
 			local_in = local_out=connection;

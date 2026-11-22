@@ -67,7 +67,7 @@
 #endif // SC_20
 
 #ifndef _VIEWER
-#include "../winvnc/winvnc/vnclog.h"
+#include "../server/server/vnclog.h"
 extern VNCLog vnclog;
 #define VNCLOG(s)	(__FUNCTION__ " : " s)
 #endif

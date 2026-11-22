@@ -1,14 +1,3 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
-//
-
-
 #include "repeater.h"
 
 void
@@ -55,23 +44,23 @@ mylabel:
 			Servers[i].nummer = i;
 			strcpy_s(Servers[i].hostname, Serverstruct->hostname);
 			GetLocalTime(&st);
-			_itoa_s(st.wYear, buf, 10);
-			strcpy_s(msg, buf);
-			strcat_s(msg, "/");
-			_itoa_s(st.wMonth, buf, 10);
-			strcat_s(msg, buf);
-			strcat_s(msg, "/");
-			_itoa_s(st.wDay, buf, 10);
-			strcat_s(msg, buf);
-			strcat_s(msg, " ");
-			_itoa_s(st.wHour, buf, 10);
-			strcat_s(msg, buf);
-			strcat_s(msg, ":");
-			_itoa_s(st.wMinute, buf, 10);
-			strcat_s(msg, buf);
-			strcat_s(msg, ":");
-			_itoa_s(st.wSecond, buf, 10);
-			strcat_s(msg, buf);
+			_itoa(st.wYear, buf, 10);
+			strcpy(msg, buf);
+			strcat(msg, "/");
+			_itoa(st.wMonth, buf, 10);
+			strcat(msg, buf);
+			strcat(msg, "/");
+			_itoa(st.wDay, buf, 10);
+			strcat(msg, buf);
+			strcat(msg, " ");
+			_itoa(st.wHour, buf, 10);
+			strcat(msg, buf);
+			strcat(msg, ":");
+			_itoa(st.wMinute, buf, 10);
+			strcat(msg, buf);
+			strcat(msg, ":");
+			_itoa(st.wSecond, buf, 10);
+			strcat(msg, buf);
 			strcpy_s(Servers[i].time, msg);
 			return;
 		}
@@ -166,23 +155,23 @@ Add_viewer_list(mystruct *Viewerstruct)
 			Viewers[i].nummer=i;
 			strcpy_s(Viewers[i].hostname,Viewerstruct->hostname);
 			GetLocalTime(&st);
-			_itoa_s(st.wYear,buf,10);
-			strcpy_s(msg,buf);
-			strcat_s(msg,"/");
-			_itoa_s(st.wMonth,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg,"/");
-			_itoa_s(st.wDay,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg," ");
-			_itoa_s(st.wHour,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg,":");
-			_itoa_s(st.wMinute,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg,":");
-			_itoa_s(st.wSecond,buf,10);
-			strcat_s(msg,buf);
+			_itoa(st.wYear,buf,10);
+			strcpy(msg,buf);
+			strcat(msg,"/");
+			_itoa(st.wMonth,buf,10);
+			strcat(msg,buf);
+			strcat(msg,"/");
+			_itoa(st.wDay,buf,10);
+			strcat(msg,buf);
+			strcat(msg," ");
+			_itoa(st.wHour,buf,10);
+			strcat(msg,buf);
+			strcat(msg,":");
+			_itoa(st.wMinute,buf,10);
+			strcat(msg,buf);
+			strcat(msg,":");
+			_itoa(st.wSecond,buf,10);
+			strcat(msg,buf);
 			strcpy_s(Viewers[i].time,msg);
 			return;
 		}

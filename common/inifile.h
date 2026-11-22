@@ -15,7 +15,7 @@
 #define _WINVNC_INIFILE
 
 #ifndef SC_20
-	#define INIFILE_NAME "ultravnc.ini"
+	#define INIFILE_NAME "tachyon.ini"
 #else
 	#define INIFILE_NAME "SC_20.ini"
 #endif // SC_20

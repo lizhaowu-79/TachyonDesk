@@ -91,7 +91,7 @@ uint32_t AttributesToWire(DWORD a)
 void PurgeOldPartFiles(const std::wstring& folder)
 {
 	WIN32_FIND_DATAW fd;
-	HANDLE find = FindFirstFileW((folder + L"~uvnc-*.part").c_str(), &fd);
+	HANDLE find = FindFirstFileW((folder + L"~tachyon-*.part").c_str(), &fd);
 	if (find == INVALID_HANDLE_VALUE)
 		return;
 	FILETIME nowFt;
@@ -733,7 +733,7 @@ void FileManServer::DoOpenWrite(const OpenWriteRequest& r)
 	// rename is atomic). Resumable: named after the target, size and time.
 	const bool resumable = (r.flags & kWriteResume) != 0;
 	const std::wstring temp = resumable ? parentW + Utf8ToWide(ResumeTempName(r.path, r.size, r.mtime))
-		: parentW + L"~uvnc-" + std::to_wstring(GetCurrentProcessId()) + L"-" + std::to_wstring(++m_tempCounter) + L".part";
+		: parentW + L"~tachyon-" + std::to_wstring(GetCurrentProcessId()) + L"-" + std::to_wstring(++m_tempCounter) + L".part";
 	if (resumable) {
 		// A retry while the earlier attempt is still open (e.g. after a
 		// timeout): close that one, keeping its data.

@@ -1,14 +1,3 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
-//
-
-
 #include "repeater.h"
 
 void error( const char *fmt, ... );
@@ -54,7 +43,7 @@ open_connection( const char *host, u_short port )
     saddr.sin_port = htons(port);
 
     debug("connecting to %s:%u\n", inet_ntoa(saddr.sin_addr), port);
-	strcpy_s(remote_host,inet_ntoa(saddr.sin_addr));
+	strcpy(remote_host,inet_ntoa(saddr.sin_addr));
 	found=FALSE;
 	if (!saved_allow) found=TRUE;
 	else
@@ -63,7 +52,7 @@ open_connection( const char *host, u_short port )
 		{
 			TCHAR myhost[256]="";
 			int myport=0;
-			if (ParseDisplay(temp1[i], sizeof(temp1[i]), myhost, 255, &myport))
+			if (ParseDisplay(temp1[i], myhost, 255, &myport))
 			{
 				char *testchar=NULL;
 				testchar=strstr(remote_host,myhost);
@@ -117,9 +106,10 @@ DWORD WINAPI mode12listener(LPVOID lpParam)
 		SOCKET  local_in;				/* Local input */
 		SOCKET  local_out;				/* Local output */
 		SOCKET  remote;
-		mystruct teststruct = {};
+		mystruct teststruct;
 		DWORD dwThreadId;
 		BOOL found2;
+		int i;
 		char *ip_peer;
 		
 		sock = socket (PF_INET, SOCK_STREAM, 0);
@@ -145,7 +135,7 @@ DWORD WINAPI mode12listener(LPVOID lpParam)
 			memset(proxyadress,0,256);
 			memset(remotehost,0,256);
 			memset(pv,0,sizeof(pv));
-	//		debug ("Waiting for Viewer connection...\n");
+	//		debug ("Waiting for Viewer connection ...\n");
 			connection = accept( sock, (struct sockaddr*)&client, &socklen);
 			Sleep(1000);
 			ip_peer=inet_ntoa(client.sin_addr);
@@ -165,7 +155,7 @@ DWORD WINAPI mode12listener(LPVOID lpParam)
 				setsockopt (connection, SOL_SOCKET, SO_SNDTIMEO, (char*) &ii, sizeof(ii));
 
 				debug ("accept() connection \n");
-				sprintf_s(pv,rfbProtocolVersionFormat,rfbProtocolMajorVersion,rfbProtocolMinorVersion);
+				sprintf(pv,rfbProtocolVersionFormat,rfbProtocolMajorVersion,rfbProtocolMinorVersion);
 				if (WriteExact(connection, pv, sz_rfbProtocolVersionMsg) < 0) {
 					debug("Writing protocol version error");
 					closesocket(connection);
@@ -179,23 +169,22 @@ DWORD WINAPI mode12listener(LPVOID lpParam)
 				DWORD i = 0;  // disable
 				setsockopt (connection, SOL_SOCKET, SO_RCVTIMEO, (char*) &i, sizeof(i));
 				setsockopt (connection, SOL_SOCKET, SO_SNDTIMEO, (char*) &i, sizeof(i));
-				if (!ParseDisplay(proxyadress, 255,  remotehost, 255, &remoteport))
+				if (!ParseDisplay(proxyadress, remotehost, 255, &remoteport))
 					{
 					debug("ParseDisplay failed");
 					shutdown(sock, 2);
 					closesocket(connection);
 					continue;
 					}
-				strcpy_s(dest_host,remotehost);
+				strcpy(dest_host,remotehost);
 				dest_port=remoteport;
 				//debug ("Server %s port %d \n", dest_host,remoteport);
 				shutdown(sock, 2);
 				local_in = local_out=connection;
 				char * pch;
 				char * comm;
-				char *posn;
-				pch = strtok_s(dest_host, "+", &posn);				
-				comm = strtok_s(NULL, ":", &posn);
+				pch = strtok (dest_host,"+");
+				comm = strtok (NULL, ":");
 
 				bool alsoID=false;
 
@@ -241,7 +230,7 @@ DWORD WINAPI mode12listener(LPVOID lpParam)
 						if (saved_refuse2)
 						{
 							found2=FALSE;
-							for (i=0;(int)i<rule3;i++)
+							for (i=0;i<rule3;i++)
 								{
 									if (atoi(temp3[i])==remoteport) found2=1;
 

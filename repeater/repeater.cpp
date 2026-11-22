@@ -1,13 +1,24 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
+/////////////////////////////////////////////////////////////////////////////
+//  Copyright (C) 2002 Ultr@VNC Team Members. All Rights Reserved.
 //
-// SPDX-License-Identifier: GPL-3.0-or-later
 //
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
+//  The VNC system is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
 //
-
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+//  USA.
+//
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #include "repeater.h"
 
@@ -28,8 +39,7 @@ FILE *f;
 						char* p = strrchr(szFileName, '\\');
 						*p = '\0';
 						strcat_s (szFileName,MAX_PATH,"\\");
-						_itoa_s(code,tempchar,10);
-						strcat_s (szFileName,MAX_PATH, tempchar);
+						strcat_s (szFileName,MAX_PATH,_itoa(code,tempchar,10));
 						strcat_s (szFileName,MAX_PATH,".txt");
 					}
 
@@ -39,28 +49,27 @@ FILE *f;
 			char	buf[5];
 			SYSTEMTIME	st; 
 			GetLocalTime(&st);
-			_itoa_s(st.wYear,buf,10);
-			strcpy_s(msg,buf);
-			strcat_s(msg,"/");
-			_itoa_s(st.wMonth,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg,"/");
-			_itoa_s(st.wDay,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg," ");
-			_itoa_s(st.wHour,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg,":");
-			_itoa_s(st.wMinute,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg,":");
-			_itoa_s(st.wSecond,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg," ");
-			strcat_s(msg,"Transmitted: ");
-			_ltoa_s((send+recv)/512,tempchar,10);
-			strcat_s(msg, tempchar);
-			strcat_s(msg,"k \n");
+			_itoa(st.wYear,buf,10);
+			strcpy(msg,buf);
+			strcat(msg,"/");
+			_itoa(st.wMonth,buf,10);
+			strcat(msg,buf);
+			strcat(msg,"/");
+			_itoa(st.wDay,buf,10);
+			strcat(msg,buf);
+			strcat(msg," ");
+			_itoa(st.wHour,buf,10);
+			strcat(msg,buf);
+			strcat(msg,":");
+			_itoa(st.wMinute,buf,10);
+			strcat(msg,buf);
+			strcat(msg,":");
+			_itoa(st.wSecond,buf,10);
+			strcat(msg,buf);
+			strcat(msg," ");
+			strcat(msg,"Transmitted: ");
+			strcat(msg,_ltoa((send+recv)/512,tempchar,10));
+			strcat(msg,"k \n");
 	
 			fprintf(f,msg);
 			fclose(f);
@@ -77,8 +86,8 @@ char szFileName[MAX_PATH];
 					{
 						char* p = strrchr(szFileName, '\\');
 						*p = '\0';
-						strcat_s(szFileName,"\\");
-						strcat_s(szFileName,"server_access.txt");
+						strcat (szFileName,"\\");
+						strcat (szFileName,"server_access.txt");
 					}
 
 	if ((f = fopen((LPCSTR)szFileName, "a")) != NULL)
@@ -87,24 +96,24 @@ char szFileName[MAX_PATH];
 			char	buf[5];
 			SYSTEMTIME	st; 
 			GetLocalTime(&st);
-			_itoa_s(st.wYear,buf,10);
-			strcpy_s(msg,buf);
-			strcat_s(msg,"/");
-			_itoa_s(st.wMonth,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg,"/");
-			_itoa_s(st.wDay,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg," ");
-			_itoa_s(st.wHour,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg,":");
-			_itoa_s(st.wMinute,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg,":");
-			_itoa_s(st.wSecond,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg," ");
+			_itoa(st.wYear,buf,10);
+			strcpy(msg,buf);
+			strcat(msg,"/");
+			_itoa(st.wMonth,buf,10);
+			strcat(msg,buf);
+			strcat(msg,"/");
+			_itoa(st.wDay,buf,10);
+			strcat(msg,buf);
+			strcat(msg," ");
+			_itoa(st.wHour,buf,10);
+			strcat(msg,buf);
+			strcat(msg,":");
+			_itoa(st.wMinute,buf,10);
+			strcat(msg,buf);
+			strcat(msg,":");
+			_itoa(st.wSecond,buf,10);
+			strcat(msg,buf);
+			strcat(msg," ");
 	
 			fprintf(f,"%s;%i;%s\n",msg,code,Servers[nummer].hostname);
 			fclose(f);
@@ -122,8 +131,8 @@ char szFileName[MAX_PATH];
 					{
 						char* p = strrchr(szFileName, '\\');
 						*p = '\0';
-						strcat_s(szFileName,"\\");
-						strcat_s(szFileName,"viewer_access.txt");
+						strcat (szFileName,"\\");
+						strcat (szFileName,"viewer_access.txt");
 					}
 
 	if ((f = fopen((LPCSTR)szFileName, "a")) != NULL)
@@ -132,24 +141,24 @@ char szFileName[MAX_PATH];
 			char	buf[5];
 			SYSTEMTIME	st; 
 			GetLocalTime(&st);
-			_itoa_s(st.wYear,buf,10);
-			strcpy_s(msg,buf);
-			strcat_s(msg,"/");
-			_itoa_s(st.wMonth,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg,"/");
-			_itoa_s(st.wDay,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg," ");
-			_itoa_s(st.wHour,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg,":");
-			_itoa_s(st.wMinute,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg,":");
-			_itoa_s(st.wSecond,buf,10);
-			strcat_s(msg,buf);
-			strcat_s(msg," ");
+			_itoa(st.wYear,buf,10);
+			strcpy(msg,buf);
+			strcat(msg,"/");
+			_itoa(st.wMonth,buf,10);
+			strcat(msg,buf);
+			strcat(msg,"/");
+			_itoa(st.wDay,buf,10);
+			strcat(msg,buf);
+			strcat(msg," ");
+			_itoa(st.wHour,buf,10);
+			strcat(msg,buf);
+			strcat(msg,":");
+			_itoa(st.wMinute,buf,10);
+			strcat(msg,buf);
+			strcat(msg,":");
+			_itoa(st.wSecond,buf,10);
+			strcat(msg,buf);
+			strcat(msg," ");
 	
 			fprintf(f,"%s;%i;%s\n",msg,code,Viewers[nummer].hostname);
 			fclose(f);
@@ -166,8 +175,8 @@ void LogStats_access(char *start,char *stop,int code,int viewer,int server ,long
 					{
 						char* p = strrchr(szFileName, '\\');
 						*p = '\0';
-						strcat_s(szFileName,"\\");
-						strcat_s(szFileName,"connections.txt");
+						strcat (szFileName,"\\");
+						strcat (szFileName,"connections.txt");
 					}
 
 	if ((f = fopen((LPCSTR)szFileName, "a")) != NULL)
@@ -185,10 +194,10 @@ debug( const char *fmt, ... )
     va_list args;
 	memset(myoutput2,0,256);
 	va_start( args, fmt );
-	sprintf_s(myoutput, "UltraVNC> ");
-	vsprintf_s( myoutput, fmt, args );
+	sprintf(myoutput, "UltraVnc> ");
+	vsprintf( myoutput, fmt, args );
 	va_end( args );
-	strncpy_s(myoutput2,myoutput,strlen(myoutput)-1);
+	strncpy(myoutput2,myoutput,strlen(myoutput)-1);
 	win_log(myoutput2);
 }
 
@@ -242,7 +251,7 @@ main_test()// int argc, char **argv )
 		Clean_viewer_List();
 	
 
-		debug("Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.\n");
+		debug("Copyright (C) 2005 Ultr@VNC Team Members. All Rights Reserved.\n");
 		debug("\n");
 		debug("\n");
 		debug("The Repeater is free software; you can redistribute it and/or modify\n");

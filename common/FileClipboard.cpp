@@ -79,7 +79,7 @@ struct Formats {
 		// narrow strings in ANSI builds (the server is built without UNICODE).
 		contents = static_cast<CLIPFORMAT>(RegisterClipboardFormatW(L"FileContents"));
 		dropEffect = static_cast<CLIPFORMAT>(RegisterClipboardFormatW(L"Preferred DropEffect"));
-		marker = static_cast<CLIPFORMAT>(RegisterClipboardFormatW(L"UltraVNC FileClip"));
+		marker = static_cast<CLIPFORMAT>(RegisterClipboardFormatW(L"TachyonDesk FileClip"));
 	}
 };
 

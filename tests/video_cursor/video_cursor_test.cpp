@@ -7,7 +7,7 @@
 
 // Test of vncviewer/VideoCursor on Windows or Wine (see run.sh).
 
-#include "../../vncviewer/VideoCursor.h"
+#include "../../viewer/VideoCursor.h"
 
 #include <cstdio>
 #include <vector>

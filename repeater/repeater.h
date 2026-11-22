@@ -1,14 +1,3 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
-//
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,9 +40,7 @@
 #ifndef FD_ALLOC
 #define FD_ALLOC(nfds) ((fd_set*)malloc((nfds+7)/8))
 #endif
-#ifndef ECONNRESET
 #define ECONNRESET WSAECONNRESET
-#endif
 #define RFB_PORT_OFFSET 5900
 #define true TRUE
 #define false FALSE
@@ -64,7 +51,7 @@ typedef char rfbProtocolVersionMsg[13];
 
 void debug( const char *fmt, ... );
 void fatal( const char *fmt, ... );
-BOOL ParseDisplay(LPTSTR display, int size, LPTSTR phost, int hostlen, int *pport) ;
+BOOL ParseDisplay(LPTSTR display, LPTSTR phost, int hostlen, int *pport) ;
 int WriteExact(int sock, char *buf, int len);
 int ReadExact(int sock, char *buf, int len);
 

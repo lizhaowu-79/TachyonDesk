@@ -1,14 +1,3 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
-//
-
-
 /* wsfdata.h
  * 
  * This file was created by an automated utility. 
@@ -17,13 +6,13 @@
 
 extern em_file efslist[38];
 
-extern  unsigned char index_html1[1315];
-extern  unsigned char passwd_html2[1383];
-extern  unsigned char settings_html3[3876];
-extern  unsigned char ok_html4[513];
-extern  unsigned char nok_html5[528];
-extern  unsigned char log_html6[867];
-extern  unsigned char comment_html7[1923];
+extern  unsigned char index_html1[1400];
+extern  unsigned char passwd_html2[1473];
+extern  unsigned char settings_html3[3957];
+extern  unsigned char ok_html4[608];
+extern  unsigned char nok_html5[609];
+extern  unsigned char log_html6[961];
+extern  unsigned char comment_html7[2026];
 extern  unsigned char images2_jpg8[1702];
 extern  unsigned char connections_txt9[39];
 extern  unsigned char viewer_access_txt10[41];

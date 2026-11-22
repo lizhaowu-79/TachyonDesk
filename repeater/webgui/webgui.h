@@ -1,14 +1,3 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
-//
-
-
 #include <stdio.h>
 
 #define true TRUE
@@ -65,9 +54,9 @@ extern int saved_portB;
 extern int saved_allow;
 extern int saved_refuse;
 extern int saved_refuse2;
-extern char saved_sample1[1025];
-extern char saved_sample2[1025];
-extern char saved_sample3[1025];
+extern char saved_sample1[1024];
+extern char saved_sample2[1024];
+extern char saved_sample3[1024];
 
 extern char temp1[50][25];
 extern char temp2[50][16];

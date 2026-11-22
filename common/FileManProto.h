@@ -232,7 +232,7 @@ std::vector<uint8_t> EncodeOpenWriteReply(const OpenWriteReply& r);
 bool DecodeOpenWriteReply(const uint8_t* p, size_t len, OpenWriteReply& out);
 
 // Name of the temporary file of a resumable transfer of `targetPath` with
-// the given source size and time: "~uvnc-<16 hex digits>.part", the same
+// the given source size and time: "~tachyon-<16 hex digits>.part", the same
 // on both sides (stable across restarts, different for another version of
 // the file).
 std::string ResumeTempName(const std::string& targetPath, uint64_t size, uint64_t mtime);

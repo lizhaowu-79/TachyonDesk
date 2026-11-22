@@ -523,7 +523,7 @@ std::string ResumeTempName(const std::string& targetPath, uint64_t size, uint64_
 	for (int i = 0; i < 8; ++i)
 		mix(static_cast<uint8_t>(mtime >> (8 * i)));
 	static const char hex[] = "0123456789abcdef";
-	std::string name = "~uvnc-";
+	std::string name = "~tachyon-";
 	for (int i = 15; i >= 0; --i)
 		name += hex[(h >> (4 * i)) & 15];
 	return name + ".part";

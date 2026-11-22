@@ -1,14 +1,3 @@
-// This file is part of UltraVNC
-// https://github.com/ultravnc/UltraVNC
-// https://uvnc.com/
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-//
-// SPDX-FileCopyrightText: Copyright (C) 2002-2025 UltraVNC Team Members. All Rights Reserved.
-// SPDX-FileCopyrightText: Copyright (C) 1999-2002 Vdacc-VNC & eSVNC Projects. All Rights Reserved.
-//
-
-
 /* websys.c
  *
  * Part of the Webio Open Source lightweight web server.
@@ -72,22 +61,20 @@ char *
 wi_getdate(wi_sess * sess)
 {
    time_t      timeval;
-   struct tm gmt;
-   errno_t err;
+   struct tm * gmt;
 
    USE_ARG(sess);
    timeval = time(NULL);
-   err = gmtime_s(&gmt, &timeval);
-   if (err)
-		return datebuf;
-   sprintf_s(datebuf, 36, "%s, %u %s %u %u:%u:%u GMT",
-      day[gmt.tm_wday],
-      gmt.tm_mday,
-      month[gmt.tm_mon],
-      gmt.tm_year + 1900, /* Windows year is based on 1900 */
-      gmt.tm_hour,
-      gmt.tm_min,
-      gmt.tm_wday);
+   gmt = gmtime(&timeval);
+
+   sprintf(datebuf, "%s, %u %s %u %u:%u:%u GMT",
+      day[gmt->tm_wday],
+      gmt->tm_mday,
+      month[gmt->tm_mon],
+      gmt->tm_year + 1900, /* Windows year is based on 1900 */
+      gmt->tm_hour,
+      gmt->tm_min,
+      gmt->tm_wday);
 
    return datebuf;
 }

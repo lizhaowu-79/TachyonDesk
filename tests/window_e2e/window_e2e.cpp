@@ -14,7 +14,7 @@
 //
 // Build: tests/window_e2e/run.sh (MinGW + Wine).
 
-#include "../../winvnc/winvnc/vncWindowSession.h"
+#include "../../server/server/vncWindowSession.h"
 
 #include <atomic>
 #include <cstdio>

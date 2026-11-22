@@ -106,7 +106,7 @@
       </Message>
     </PostBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>..\..\..\vncviewer\res</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\viewer\res</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -135,7 +135,7 @@
       </Message>
     </PostBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>..\..\..\vncviewer\res</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\viewer\res</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -158,7 +158,7 @@
       </Message>
     </PostBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>..\..\..\vncviewer\res</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\viewer\res</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -187,53 +187,53 @@
       </Message>
     </PostBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>..\..\..\vncviewer\res</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\viewer\res</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ResourceCompile Include="vncviewer.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\vncviewer\res\cursor1.cur" />
-    <None Include="..\..\..\vncviewer\res\cursorsel.cur" />
-    <None Include="..\..\..\vncviewer\res\Finger.cur" />
-    <None Include="..\..\..\vncviewer\res\nocursor.cur" />
+    <None Include="..\..\..\viewer\res\cursor1.cur" />
+    <None Include="..\..\..\viewer\res\cursorsel.cur" />
+    <None Include="..\..\..\viewer\res\Finger.cur" />
+    <None Include="..\..\..\viewer\res\nocursor.cur" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\vncviewer\res\B46.ico" />
-    <Image Include="..\..\..\vncviewer\res\dir.ico" />
-    <Image Include="..\..\..\vncviewer\res\down.bmp" />
-    <Image Include="..\..\..\vncviewer\res\drive.ico" />
-    <Image Include="..\..\..\vncviewer\res\file.ico" />
-    <Image Include="..\..\..\vncviewer\res\hoch.bmp" />
-    <Image Include="..\..\..\vncviewer\res\idr_tray.ico" />
-    <Image Include="..\..\..\vncviewer\res\idr_tray_disabled.ico" />
-    <Image Include="..\..\..\vncviewer\res\quer.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\1op1.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\back.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\both.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\chat.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\closeup.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\front.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\FT.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\full.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\maximizeup.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\minimizeup.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\none.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\photo.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\pindown.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\pinup.bmp" />
-    <Image Include="..\..\..\vncviewer\res\stat\switch.bmp" />
-    <Image Include="..\..\..\vncviewer\res\Tango_l.bmp" />
-    <Image Include="..\..\..\vncviewer\res\Tango_lx.bmp" />
-    <Image Include="..\..\..\vncviewer\res\Tango_s.bmp" />
-    <Image Include="..\..\..\vncviewer\res\Tango_sx.bmp" />
-    <Image Include="..\..\..\vncviewer\res\up.bmp" />
-    <Image Include="..\..\..\vncviewer\res\vnc32.BMP" />
-    <Image Include="..\..\..\vncviewer\res\vnc64.BMP" />
+    <Image Include="..\..\..\viewer\res\B46.ico" />
+    <Image Include="..\..\..\viewer\res\dir.ico" />
+    <Image Include="..\..\..\viewer\res\down.bmp" />
+    <Image Include="..\..\..\viewer\res\drive.ico" />
+    <Image Include="..\..\..\viewer\res\file.ico" />
+    <Image Include="..\..\..\viewer\res\hoch.bmp" />
+    <Image Include="..\..\..\viewer\res\idr_tray.ico" />
+    <Image Include="..\..\..\viewer\res\idr_tray_disabled.ico" />
+    <Image Include="..\..\..\viewer\res\quer.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\1op1.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\back.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\both.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\chat.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\closeup.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\front.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\FT.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\full.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\maximizeup.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\minimizeup.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\none.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\photo.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\pindown.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\pinup.bmp" />
+    <Image Include="..\..\..\viewer\res\stat\switch.bmp" />
+    <Image Include="..\..\..\viewer\res\Tango_l.bmp" />
+    <Image Include="..\..\..\viewer\res\Tango_lx.bmp" />
+    <Image Include="..\..\..\viewer\res\Tango_s.bmp" />
+    <Image Include="..\..\..\viewer\res\Tango_sx.bmp" />
+    <Image Include="..\..\..\viewer\res\up.bmp" />
+    <Image Include="..\..\..\viewer\res\vnc32.BMP" />
+    <Image Include="..\..\..\viewer\res\vnc64.BMP" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\vncviewer\res\resource.h" />
+    <ClInclude Include="..\..\..\viewer\res\resource.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
