@@ -10,6 +10,13 @@ TachyonDesk targets **Windows 10 / 11 (x64)**.
 
 ## Quick Build (Release | x64)
 
+Clone the repository **with submodules** (`3rdparty/noVNC` is embedded by `TachyonServer.exe` resources):
+
+```powershell
+git clone --recursive https://github.com/lizhaowu-79/TachyonDesk.git
+cd TachyonDesk
+```
+
 The repository bundles prebuilt x64 Release third-party dependencies under `3rdparty/` (`zlib`, `zstd`, `libjpeg-turbo`, `liblzma`, `libsodium`, `minizip-ng`, `libyuv`, `ffnvcodec`), so `Release | x64` builds out of the box without running vcpkg:
 
 ```powershell
