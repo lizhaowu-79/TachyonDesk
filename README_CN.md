@@ -1,4 +1,5 @@
 <p align="center">
+  <img src="docs/logo.png" alt="TachyonDesk Logo" width="128">
   <h1 align="center">TachyonDesk（快子桌面）</h1>
   <p align="center">
     单端口高性能 Windows 远程桌面套件：GPU 硬件视频流、单窗口远控、远程声音与现代文件传输。

@@ -1,4 +1,5 @@
 <p align="center">
+  <img src="docs/logo.png" alt="TachyonDesk Logo" width="128">
   <h1 align="center">TachyonDesk</h1>
   <p align="center">
     High-performance, single-port Windows remote desktop with GPU video streaming, single-window control, remote audio, and modern file transfer.
