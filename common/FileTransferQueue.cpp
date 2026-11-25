@@ -280,9 +280,9 @@ void FileTransferQueue::Run(const std::shared_ptr<Item>& item)
 		bool overwrite = false;
 		Entry existing;
 		const bool exists = TargetExists(dir, target, existing);
-		// Already there, same size and time (e.g. sent before an interrupted
-		// attempt): nothing to do, no question.
-		if (exists && !existing.IsDirectory() && existing.size == task.size && task.mtime &&
+		// Folder transfers / retries skip identical files silently; explicit
+		// single-file transfers always ask the user before overwriting.
+		if (item->info.directory && exists && !existing.IsDirectory() && existing.size == task.size && task.mtime &&
 		    existing.mtime == task.mtime) {
 			std::lock_guard<std::mutex> lk(m_mutex);
 			item->info.filesIdentical++;

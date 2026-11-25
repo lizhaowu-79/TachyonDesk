@@ -468,14 +468,14 @@ BEGIN
     BEGIN
         BLOCK "081304b0"
         BEGIN
-            VALUE "Comments", "Standalone tachyon.ini editor"
-            VALUE "CompanyName", "uvnc bv"
-            VALUE "FileDescription", "Standalone tachyon.ini editor"
+            VALUE "Comments", "TachyonDesk Settings Editor"
+            VALUE "CompanyName", "TachyonDesk"
+            VALUE "FileDescription", "TachyonDesk Settings"
             VALUE "FileVersion", "1.2.0.5"
-            VALUE "InternalName", "uvnc_settings.exe"
+            VALUE "InternalName", "TachyonSettings.exe"
             VALUE "LegalCopyright", "Copyright © 2002-2025 UltraVNC Team Members. All Rights Reserved."
-            VALUE "OriginalFilename", "uvnc_settings.exe"
-            VALUE "ProductName", "uvnc_set Application"
+            VALUE "OriginalFilename", "TachyonSettings.exe"
+            VALUE "ProductName", "TachyonDesk Settings"
             VALUE "ProductVersion", "1.2.0.5"
         END
     END

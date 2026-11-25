@@ -41,14 +41,14 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "Comments", "UltraVNC Viewer"
-            VALUE "CompanyName", "uvnc bv"
-            VALUE "FileDescription", "UltraVNC Viewer"
+            VALUE "Comments", "TachyonDesk Viewer"
+            VALUE "CompanyName", "TachyonDesk"
+            VALUE "FileDescription", "TachyonDesk Viewer"
             VALUE "FileVersion", APS_FULLVERSION_STR
-            VALUE "InternalName", "UltraVNC Viewer"
+            VALUE "InternalName", "TachyonViewer.exe"
             VALUE "LegalCopyright", "Copyright © 2002-" STRINGIZE(APS_DATEYEAR) " UltraVNC Team Members. All Rights Reserved."
-            VALUE "OriginalFilename", "UltraVNC Viewer.exe"
-            VALUE "ProductName", "UltraVNC Viewer"
+            VALUE "OriginalFilename", "TachyonViewer.exe"
+            VALUE "ProductName", "TachyonDesk Viewer"
             VALUE "ProductVersion", APS_FULLVERSION_STR
         END
     END

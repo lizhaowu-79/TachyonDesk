@@ -134,6 +134,11 @@ uint32_t AttributesToWire(DWORD attributes);
 // Delete "~tachyon-*.part" files older than a week in a folder (with a
 // trailing backslash): partial transfers nobody came back for.
 void PurgeOldPartFiles(const std::wstring& folder);
+// Commit a completed temporary file to target. When overwrite is true and
+// target already exists, renames target to a backup in the same folder first,
+// moves temp into target, deletes the backup on success, or restores the backup
+// back to target on failure. Returns 0 on success or a Win32 error code.
+DWORD CommitTempFileSafely(const std::wstring& temp, const std::wstring& target, bool overwrite);
 
 } // namespace fileman
 

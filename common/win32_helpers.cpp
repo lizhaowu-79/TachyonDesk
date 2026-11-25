@@ -108,9 +108,9 @@ bool yesnoUVNCMessageBox(HINSTANCE hInst, HWND m_hWnd, char* szHeader, char* bod
     TASKDIALOGCONFIG tdc = { sizeof(TASKDIALOGCONFIG) };
     int nClickedBtn;
 #ifdef _VIEWER
-    LPCWSTR szTitle = L"UltraVNC Viewer";
+    LPCWSTR szTitle = L"TachyonDesk Viewer";
 #else
-    LPCWSTR szTitle = L"UltraVNC Server";
+    LPCWSTR szTitle = L"TachyonDesk Server";
 #endif
     TASKDIALOG_BUTTON aCustomButtons[] = {
         { 1000, w_okStr},
@@ -152,9 +152,9 @@ bool yesUVNCMessageBox(HINSTANCE hInst, HWND m_hWnd, char* body, char* szHeader,
     TASKDIALOGCONFIG tdc = { sizeof(TASKDIALOGCONFIG) };
     int nClickedBtn;
 #ifdef _VIEWER
-    LPCWSTR szTitle = L"UltraVNC Viewer";
+    LPCWSTR szTitle = L"TachyonDesk Viewer";
 #else
-    LPCWSTR szTitle = L"UltraVNC Server";
+    LPCWSTR szTitle = L"TachyonDesk Server";
 #endif
 
     tdc.cbSize = sizeof(tdc);
@@ -197,9 +197,9 @@ bool yesUVNCMessageBox(HINSTANCE hInst, HWND m_hWnd, wchar_t* body, wchar_t* szH
     TASKDIALOGCONFIG tdc = { sizeof(TASKDIALOGCONFIG) };
     int nClickedBtn;
 #ifdef _VIEWER
-    LPCWSTR szTitle = L"UltraVNC Viewer";
+    LPCWSTR szTitle = L"TachyonDesk Viewer";
 #else
-    LPCWSTR szTitle = L"UltraVNC Server";
+    LPCWSTR szTitle = L"TachyonDesk Server";
 #endif
 
     tdc.cbSize = sizeof(tdc);
@@ -242,9 +242,9 @@ bool yesnoUVNCMessageBox(HINSTANCE hInst, HWND m_hWnd, wchar_t* szHeader, wchar_
     TASKDIALOGCONFIG tdc = { sizeof(TASKDIALOGCONFIG) };
     int nClickedBtn;
 #ifdef _VIEWER
-    LPCWSTR szTitle = L"UltraVNC Viewer";
+    LPCWSTR szTitle = L"TachyonDesk Viewer";
 #else
-    LPCWSTR szTitle = L"UltraVNC Server";
+    LPCWSTR szTitle = L"TachyonDesk Server";
 #endif
     TASKDIALOG_BUTTON aCustomButtons[] = {
         { 1000, okStr },

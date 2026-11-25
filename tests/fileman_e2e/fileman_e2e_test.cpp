@@ -156,7 +156,7 @@ static int CountTempFiles(const std::string& dir)
 			continue;
 		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			n += CountTempFiles(JoinPath(dir, name));
-		else if (name.rfind("~tachyon-", 0) == 0)
+		else if (name.rfind("~tachyon-", 0) == 0 || name.find(".tachyon_bak") != std::string::npos)
 			++n;
 	} while (FindNextFileW(f, &fd));
 	FindClose(f);
@@ -626,6 +626,8 @@ static void TestQueue()
 	// Cancel an item while waiting for a conflict prompt.
 	Sleep(20);
 	WriteBytes(JoinPath(src, "1.txt"), RandomBytes(102, 17));
+	std::vector<uint8_t> origBeforeCancel;
+	CHECK(ReadBytes(JoinPath(dst, "tree\\1.txt"), origBeforeCancel));
 	waitForCancel = true;
 	conflictEntered = false;
 	const uint32_t cancelId = q.Add(Direction::Upload, JoinPath(src, "1.txt"), false, 102, JoinPath(dst, "tree"));
@@ -637,12 +639,61 @@ static void TestQueue()
 	waitFinished(10);
 	snap = q.Snapshot();
 	CHECK(snap.back().id == cancelId && snap.back().state == ItemState::Cancelled);
+	std::vector<uint8_t> afterCancel;
+	CHECK(ReadBytes(JoinPath(dst, "tree\\1.txt"), afterCancel) && afterCancel == origBeforeCancel);
 	waitForCancel = false;
+
+	// Single-file transfer onto an identical existing destination file still asks
+	// and overwrites when confirmed.
+	asked = 0;
+	answer = ConflictChoice::Overwrite;
+	answerAll = false;
+	q.Add(Direction::Upload, JoinPath(src, "1.txt"), false, 102, JoinPath(dst, "tree"));
+	waitFinished(11);
+	snap = q.Snapshot();
+	CHECK(snap.back().state == ItemState::Done && snap.back().filesDone == 1);
+	CHECK(ReadBytes(JoinPath(src, "1.txt"), a) && ReadBytes(JoinPath(dst, "tree\\1.txt"), b) && a == b);
+	CHECK(asked == 1);
+	asked = 0;
+	q.Add(Direction::Upload, JoinPath(src, "1.txt"), false, 102, JoinPath(dst, "tree"));
+	waitFinished(12);
+	snap = q.Snapshot();
+	CHECK(snap.back().state == ItemState::Done && snap.back().filesDone == 1 && asked == 1);
 
 	q.ClearFinished();
 	CHECK(q.Snapshot().empty() && !q.Busy());
 	CHECK(CountTempFiles(g_base) == 0);
 	q.Shutdown();
+}
+
+static void TestSafeOverwrite()
+{
+	const std::string dir = JoinPath(g_base, "safe_overwrite");
+	CreateDirectoryW(W(dir).c_str(), NULL);
+	const std::string target = JoinPath(dir, "doc.dat");
+	const std::string temp = JoinPath(dir, "~temp.part");
+	const std::vector<uint8_t> orig = RandomBytes(500, 21);
+	const std::vector<uint8_t> replacement = RandomBytes(700, 22);
+
+	// Failure to commit missing temp rolls back target + its READONLY attribute.
+	WriteBytes(target, orig);
+	const std::wstring targetW = W(target);
+	SetFileAttributesW(targetW.c_str(), FILE_ATTRIBUTE_READONLY);
+	const DWORD failErr = CommitTempFileSafely(W(JoinPath(dir, "missing.part")), targetW, true);
+	CHECK(failErr != 0);
+	std::vector<uint8_t> readBack;
+	CHECK(ReadBytes(target, readBack) && readBack == orig);
+	CHECK((GetFileAttributesW(targetW.c_str()) & FILE_ATTRIBUTE_READONLY) != 0);
+	CHECK(CountTempFiles(dir) == 0);
+
+	// Successful commit replaces target (even if target was READONLY) and removes backup.
+	WriteBytes(temp, replacement);
+	const DWORD okErr = CommitTempFileSafely(W(temp), targetW, true);
+	CHECK(okErr == 0);
+	CHECK(ReadBytes(target, readBack) && readBack == replacement);
+	CHECK(!Exists(temp));
+	CHECK(CountTempFiles(dir) == 0);
+	SetFileAttributesW(targetW.c_str(), FILE_ATTRIBUTE_NORMAL);
 }
 
 int main()
@@ -665,6 +716,7 @@ int main()
 	TestTransfers();
 	TestResume();
 	TestQueue();
+	TestSafeOverwrite();
 
 	// Clean up with our own delete.
 	{

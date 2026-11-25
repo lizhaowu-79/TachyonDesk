@@ -105,6 +105,74 @@ void PurgeOldPartFiles(const std::wstring& folder)
 	FindClose(find);
 }
 
+static std::wstring EnsureLongWide(const std::wstring& p)
+{
+	if (p.size() < MAX_PATH - 24 || p.compare(0, 4, L"\\\\?\\") == 0)
+		return p;
+	if (p.size() >= 2 && p[0] == L'\\' && p[1] == L'\\')
+		return L"\\\\?\\UNC\\" + p.substr(2);
+	return L"\\\\?\\" + p;
+}
+
+static void ClearHiddenAttribute(const std::wstring& path)
+{
+	const DWORD attrs = GetFileAttributesW(path.c_str());
+	if (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_HIDDEN))
+		SetFileAttributesW(path.c_str(), attrs & ~FILE_ATTRIBUTE_HIDDEN);
+}
+
+DWORD CommitTempFileSafely(const std::wstring& temp, const std::wstring& target, bool overwrite)
+{
+	const std::wstring tempLong = EnsureLongWide(temp);
+	const std::wstring targetLong = EnsureLongWide(target);
+	const DWORD origAttrs = GetFileAttributesW(targetLong.c_str());
+	if (!overwrite || origAttrs == INVALID_FILE_ATTRIBUTES) {
+		if (!MoveFileExW(tempLong.c_str(), targetLong.c_str(), 0))
+			return GetLastError();
+		ClearHiddenAttribute(targetLong);
+		return 0;
+	}
+	if (origAttrs & FILE_ATTRIBUTE_DIRECTORY)
+		return ERROR_ACCESS_DENIED;
+
+	std::wstring backupLong = EnsureLongWide(target + L".tachyon_bak");
+	if (GetFileAttributesW(backupLong.c_str()) != INVALID_FILE_ATTRIBUTES) {
+		bool found = false;
+		for (int i = 1; i <= 999; ++i) {
+			const std::wstring candidate = EnsureLongWide(target + L".tachyon_bak." + std::to_wstring(i));
+			if (GetFileAttributesW(candidate.c_str()) == INVALID_FILE_ATTRIBUTES) {
+				backupLong = candidate;
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			return ERROR_ALREADY_EXISTS;
+	}
+
+	if (origAttrs & FILE_ATTRIBUTE_READONLY)
+		SetFileAttributesW(targetLong.c_str(), origAttrs & ~FILE_ATTRIBUTE_READONLY);
+
+	if (!MoveFileExW(targetLong.c_str(), backupLong.c_str(), 0)) {
+		const DWORD err = GetLastError();
+		if (origAttrs & FILE_ATTRIBUTE_READONLY)
+			SetFileAttributesW(targetLong.c_str(), origAttrs);
+		return err;
+	}
+
+	if (!MoveFileExW(tempLong.c_str(), targetLong.c_str(), 0)) {
+		const DWORD err = GetLastError();
+		MoveFileExW(backupLong.c_str(), targetLong.c_str(), 0);
+		if (origAttrs & FILE_ATTRIBUTE_READONLY)
+			SetFileAttributesW(targetLong.c_str(), origAttrs);
+		return err;
+	}
+
+	ClearHiddenAttribute(targetLong);
+	DeleteFileW(backupLong.c_str());
+	return 0;
+}
+
 namespace {
 
 // Impersonates for the lifetime of the object (if a token is given).
@@ -842,20 +910,11 @@ void FileManServer::DoCloseWrite(const CloseWriteRequest& r)
 	}
 	CloseHandle(o.handle);
 	if (r.commit && status == kOk) {
-		if (o.overwrite) {
-			const DWORD attrs = GetFileAttributesW(o.target.c_str());
-			if (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_READONLY))
-				SetFileAttributesW(o.target.c_str(), attrs & ~FILE_ATTRIBUTE_READONLY);
-		}
-		if (MoveFileExW(o.temp.c_str(), o.target.c_str(), o.overwrite ? MOVEFILE_REPLACE_EXISTING : 0)) {
-			// The temporary file was hidden; the real one is not.
-			const DWORD attrs = GetFileAttributesW(o.target.c_str());
-			if (attrs != INVALID_FILE_ATTRIBUTES)
-				SetFileAttributesW(o.target.c_str(), attrs & ~FILE_ATTRIBUTE_HIDDEN);
+		const DWORD e = CommitTempFileSafely(o.temp, o.target, o.overwrite);
+		if (e == 0) {
 			Reply(r.reqId, kOk);
 			return;
 		}
-		const DWORD e = GetLastError();
 		status = StatusFromWin32(e);
 		message = Win32Message(e);
 	}

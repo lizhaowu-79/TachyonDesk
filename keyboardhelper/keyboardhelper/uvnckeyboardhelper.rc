@@ -154,13 +154,13 @@ BEGIN
     BEGIN
         BLOCK "040004b0"
         BEGIN
-            VALUE "CompanyName", "uvnc bv"
-            VALUE "FileDescription", "used to send special keys"
+            VALUE "CompanyName", "TachyonDesk"
+            VALUE "FileDescription", "TachyonDesk Keyboard Helper"
             VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "uvnckeyboardhelper.exe"
+            VALUE "InternalName", "TachyonKeyboardHelper.exe"
             VALUE "LegalCopyright", "Copyright © 2002-2025 UltraVNC Team Members. All Rights Reserved."
-            VALUE "OriginalFilename", "uvnckeyboardhelper.exe"
-            VALUE "ProductName", "uvnckeyboardhelper"
+            VALUE "OriginalFilename", "TachyonKeyboardHelper.exe"
+            VALUE "ProductName", "TachyonDesk Keyboard Helper"
             VALUE "ProductVersion", "1.0.0.1"
         END
     END

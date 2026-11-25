@@ -163,13 +163,13 @@ BEGIN
     BEGIN
         BLOCK "081304b0"
         BEGIN
-            VALUE "CompanyName", " "
-            VALUE "FileDescription", "distributer"
+            VALUE "CompanyName", "TachyonDesk"
+            VALUE "FileDescription", "TachyonDesk Repeater"
             VALUE "FileVersion", "1.4.0.0"
-            VALUE "InternalName", "distributer"
+            VALUE "InternalName", "TachyonRepeater.exe"
             VALUE "LegalCopyright", "Copyright © 2016"
-            VALUE "OriginalFilename", "distributer.exe"
-            VALUE "ProductName", "  distributer"
+            VALUE "OriginalFilename", "TachyonRepeater.exe"
+            VALUE "ProductName", "TachyonDesk Repeater"
             VALUE "ProductVersion", "1.4.0.0"
         END
     END

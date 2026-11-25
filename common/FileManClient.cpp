@@ -529,18 +529,10 @@ Result FileManClient::Download(const std::string& remotePath, const std::wstring
 	}
 	CloseHandle(file);
 	if (r.Ok()) {
-		if (overwrite) {
-			const DWORD attrs = GetFileAttributesW(localPath.c_str());
-			if (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_READONLY))
-				SetFileAttributesW(localPath.c_str(), attrs & ~FILE_ATTRIBUTE_READONLY);
-		}
-		if (MoveFileExW(temp.c_str(), localPath.c_str(), overwrite ? MOVEFILE_REPLACE_EXISTING : 0)) {
-			const DWORD attrs = GetFileAttributesW(localPath.c_str());
-			if (attrs != INVALID_FILE_ATTRIBUTES)
-				SetFileAttributesW(localPath.c_str(), attrs & ~FILE_ATTRIBUTE_HIDDEN);
+		const DWORD e = CommitTempFileSafely(temp, localPath, overwrite);
+		if (e == 0)
 			return r;
-		}
-		r = Win32Result(GetLastError());
+		r = Win32Result(e);
 	}
 	// Interrupted by the connection: keep what we have for the next try.
 	// Anything else (cancel, error): throw it away.

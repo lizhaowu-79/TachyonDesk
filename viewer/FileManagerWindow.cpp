@@ -187,6 +187,11 @@ struct RemoteDragCookie {
 
 FileManagerWindow* FileManagerWindow::Open(const Options& options)
 {
+	static const bool controlsReady = [] {
+		INITCOMMONCONTROLSEX icc = { sizeof(icc), ICC_LISTVIEW_CLASSES | ICC_STANDARD_CLASSES | ICC_BAR_CLASSES };
+		return InitCommonControlsEx(&icc) != FALSE;
+	}();
+	(void)controlsReady;
 	static bool registered = false;
 	HINSTANCE inst = GetModuleHandleW(NULL);
 	if (!registered) {
@@ -2060,7 +2065,12 @@ ConflictChoice FileManagerWindow::AskConflict(const Conflict& c, bool& applyToAl
 	tdc.lpCallbackData = reinterpret_cast<LONG_PTR>(this);
 	int button = IDCANCEL;
 	BOOL all = FALSE;
-	if (FAILED(TaskDialogIndirect(&tdc, &button, NULL, &all))) {
+	const HRESULT hr = TaskDialogIndirect(&tdc, &button, NULL, &all);
+	if (FAILED(hr)) {
+		wchar_t dbg[128];
+		swprintf_s(dbg, 128, L"FileManagerWindow::AskConflict TaskDialogIndirect failed: 0x%08lX\n",
+			static_cast<unsigned long>(hr));
+		OutputDebugStringW(dbg);
 		bool cancelled = m_closing;
 		if (!cancelled && m_activeConflict) {
 			std::lock_guard<std::mutex> lk(m_activeConflict->mutex);
@@ -2074,8 +2084,9 @@ ConflictChoice FileManagerWindow::AskConflict(const Conflict& c, bool& applyToAl
 		};
 		const std::wstring fallback = instruction + L"\n\n" + content + L"\n\n" +
 			stripAmp(Tr(L"&Replace the file")) + L" / " + stripAmp(Tr(L"&Skip this file")) + L" / " + Tr(L"Cancel");
+		const UINT topmost = (GetWindowLongPtrW(m_hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST) ? MB_TOPMOST : 0;
 		const int mb = MessageBoxW(m_hwnd, fallback.c_str(), Tr(L"TachyonDesk File Transfer"),
-			MB_YESNOCANCEL | MB_ICONWARNING | MB_SETFOREGROUND);
+			MB_YESNOCANCEL | MB_ICONWARNING | MB_SETFOREGROUND | topmost);
 		applyToAll = false;
 		if (mb == IDYES)
 			return ConflictChoice::Overwrite;
