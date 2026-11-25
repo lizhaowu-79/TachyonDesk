@@ -485,7 +485,7 @@ LRESULT CALLBACK CTitleBar::WndProc(HWND hwnd, UINT iMsg,
 					if (TitleBarThis->Fit == TRUE)
 						::SendMessage(TitleBarThis->Parent, tbWM_PHOTO, 0, 0);
 					else
-						yesUVNCMessageBox(m_hInstResDLL, TitleBarThis->Parent, _T("Function only supported in 1:1 mode"), _T("UltraVNC Viewer - Snapshot"), MB_ICONINFORMATION);
+						yesUVNCMessageBox(m_hInstResDLL, TitleBarThis->Parent, _T("Function only supported in 1:1 mode"), _T("TachyonDesk Viewer - Snapshot"), MB_ICONINFORMATION);
 				if(LOWORD(wParam) == tbIDC_SWITCHMONITOR)
 					::SendMessage(TitleBarThis->Parent, tbWM_SWITCHMONITOR, 0, 0);
 

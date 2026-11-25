@@ -162,7 +162,7 @@ bool SchannelTLS::LoadCertByThumbprint(const char* thumbprint)
 
 bool SchannelTLS::EnsureSelfSignedCert(char* outThumbprint)
 {
-    const wchar_t* CN = L"CN=UltraVNC-WebViewer";
+    const wchar_t* CN = L"CN=TachyonDesk-WebViewer";
 
     // Try Local Machine store first (requires admin/SYSTEM), fall back to Current User
     struct StoreCandidate { DWORD location; bool machineKeyset; const wchar_t* label; };
@@ -198,7 +198,7 @@ bool SchannelTLS::EnsureSelfSignedCert(char* outThumbprint)
     {
         char name[256] = {};
         CertGetNameStringA(cur, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, nullptr, name, sizeof(name));
-        if (strcmp(name, "UltraVNC-WebViewer") == 0)
+        if (strcmp(name, "TachyonDesk-WebViewer") == 0)
         {
             FILETIME ftNow;
             GetSystemTimeAsFileTime(&ftNow);
@@ -240,7 +240,7 @@ bool SchannelTLS::EnsureSelfSignedCert(char* outThumbprint)
         end.wYear += 2;
 
         CRYPT_KEY_PROV_INFO keyProvInfo = {};
-        keyProvInfo.pwszContainerName = const_cast<LPWSTR>(L"UltraVNC-WebViewer");
+        keyProvInfo.pwszContainerName = const_cast<LPWSTR>(L"TachyonDesk-WebViewer");
         keyProvInfo.dwProvType        = PROV_RSA_SCHANNEL;
         keyProvInfo.dwFlags           = useMachineKeyset ? CRYPT_MACHINE_KEYSET : 0;
         keyProvInfo.dwKeySpec         = AT_KEYEXCHANGE;

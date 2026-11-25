@@ -306,7 +306,7 @@ void ClientConnection::SaveClipboardPreferences()
 		//ofnInit();
 		char buf[32];
 		sprintf_s(buf, "%d", dwClipboardPrefs);
-		{ char _fn[MAX_PATH]; WideCharToMultiByte(CP_UTF8,0,m_opts->getDefaultOptionsFileName(),-1,_fn,MAX_PATH,NULL,NULL); vnclog.Print(1, _T("Saving to %S\n"), m_opts->getDefaultOptionsFileName()); WritePrivateProfileStringA("connection", "ClipboardPrefs", buf, _fn); }
+		{ char _fn[MAX_PATH]; WideCharToMultiByte(CP_UTF8,0,m_opts->getDefaultOptionsFileName(),-1,_fn,MAX_PATH,NULL,NULL); vnclog.Print(1, _T("Saving to %S\n"), m_opts->getDefaultOptionsFileName()); WritePrivateProfileStringA("connection", "ClipboardPrefs", buf, _fn); WritePrivateProfileStringA("connection", "ClipboardDIB", (m_clipboard.settings.m_nLimitDIB > 0) ? "1" : "0", _fn); }
 	}
 }
 
@@ -314,14 +314,18 @@ bool ClientConnection::LoadClipboardPreferences()
 {
 	omni_mutex_lock l(m_clipMutex);
 	DWORD dwClipboardPrefs = 0;
+	DWORD dwClipboardDIB = 1;
 //	ofnInit();
-	{ char _fn[MAX_PATH]; WideCharToMultiByte(CP_UTF8,0,m_opts->getDefaultOptionsFileName(),-1,_fn,MAX_PATH,NULL,NULL); vnclog.Print(1, _T("Loading from %S\n"), m_opts->getDefaultOptionsFileName()); dwClipboardPrefs = clipText | clipRTF | clipHTML; dwClipboardPrefs = GetPrivateProfileIntA("connection", "ClipboardPrefs", dwClipboardPrefs, _fn); }
+	{ char _fn[MAX_PATH]; WideCharToMultiByte(CP_UTF8,0,m_opts->getDefaultOptionsFileName(),-1,_fn,MAX_PATH,NULL,NULL); vnclog.Print(1, _T("Loading from %S\n"), m_opts->getDefaultOptionsFileName()); dwClipboardPrefs = clipText | clipRTF | clipHTML; dwClipboardPrefs = GetPrivateProfileIntA("connection", "ClipboardPrefs", dwClipboardPrefs, _fn); dwClipboardDIB = GetPrivateProfileIntA("connection", "ClipboardDIB", 1, _fn); }
 	dwClipboardPrefs |= clipText;
 	if (!(dwClipboardPrefs & clipRTF)) {
 		m_clipboard.settings.m_nLimitRTF = 0;
 	}
 	if (!(dwClipboardPrefs & clipHTML)) {
 		m_clipboard.settings.m_nLimitHTML = 0;
+	}
+	if (dwClipboardDIB == 0) {
+		m_clipboard.settings.m_nLimitDIB = 0;
 	}
 	return true;
 }

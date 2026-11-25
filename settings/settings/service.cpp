@@ -30,7 +30,7 @@
 static char service_path[MAX_PATH];
 static char service_file[MAX_PATH];
 char service_name[256]="TachyonDeskService";
-char *app_name = "UltraVNC";
+char *app_name = "TachyonDesk";
 #define VNCDEPENDENCIES    "Tcpip\0\0"
 
 
@@ -41,7 +41,7 @@ void set_service_description()
 	DWORD	dw;
 	HKEY hKey;
 	char tempName[256];
-    char desc[] = "UltraVNC Server provides secure remote desktop sharing";
+    char desc[] = "TachyonDesk Server provides secure remote desktop sharing";
 	_snprintf(tempName,  sizeof tempName, "SYSTEM\\CurrentControlSet\\Services\\%s", service_name);
 	RegCreateKeyEx(HKEY_LOCAL_MACHINE,
 						tempName,

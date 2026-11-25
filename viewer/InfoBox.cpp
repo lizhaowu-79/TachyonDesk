@@ -55,7 +55,7 @@ static LRESULT CALLBACK MessageDlgProc2(HWND hwnd, UINT iMsg,
 			ConvertStaticToHyperlink(hwnd, IDC_WEBDOWNLOAD);
 			char version[50]{};
 			char title[256]{};
-			strcpy_s(title, "UltraVNC Viewer - ");
+			strcpy_s(title, "TachyonDesk Viewer - ");
 			strcat_s(title, GetVersionFromResource(version));
 			wchar_t wtitle[256];
 			MultiByteToWideChar(CP_ACP, 0, title, -1, wtitle, 256);

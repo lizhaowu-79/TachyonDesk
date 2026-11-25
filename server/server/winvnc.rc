@@ -146,7 +146,7 @@ BEGIN
     LTEXT           "TEXTMIDDLE",IDC_TEXTMIDDLE,4,153,141,8
     LTEXT           "TEXTBOTTOM",IDC_TEXTBOTTOM,4,165,141,8
     PUSHBUTTON      "Info",IDC_HELPWEB,4,179,80,14,BS_FLAT
-    RTEXT           "Team UltraVNC 2022",IDC_TEXTRIGHTBOTTOM,2,195,173,8
+    RTEXT           "TachyonDesk",IDC_TEXTRIGHTBOTTOM,2,195,173,8
     PUSHBUTTON      "Close",IDC_CLOSE,95,179,80,14,BS_FLAT
     DEFPUSHBUTTON   "Connect",IDC_CONNECT,4,123,171,14,BS_FLAT
     CONTROL         IDB_LOGO64,IDC_LOGO,"Static",SS_BITMAP,136,145,28,24
@@ -1084,7 +1084,7 @@ BEGIN
     ID_AUTOREJECT_U         "AutoReject: %u"
     ID_CADERROR             "Ctrl-alt-del require service, no permission"
     ID_CADERRORFILE         "The file cad.exe was not found in the same folder as TachyonDesk Server TachyonServer.exe"
-    ID_CADPERMISSION        "Permission denied on cad.exe, UltraVNC must be installed in ""program files"" else special cad permission is refused."
+    ID_CADPERMISSION        "Permission denied on cad.exe, TachyonDesk must be installed in ""program files"" else special cad permission is refused."
     ID_CANNOT_EDIT_DEFAULT_PREFS 
                             "You do not have sufficient privileges to edit the default local TachyonDesk Server settings."
     ID_CHAT_WITH_S_ULTRAVNC "TachyonDesk Server - Chat with <%s>"
@@ -1152,14 +1152,14 @@ BEGIN
     IDS_REBOOT_SYSTEM_QUESTION "Do you want to reboot the System?"
     IDS_FORCE_REBOOT_QUESTION "Do you want to force reboot the System?"
     IDS_UNINSTALL_SERVICE_QUESTION 
-                            "Do you want to uninstall the UltraVNC service?"
-    IDS_INSTALL_SERVICE_QUESTION "Do you want to install UltraVNC as service?"
-    IDS_STOP_SERVICE_QUESTION "Do you want to stop the UltraVNC service?"
+                            "Do you want to uninstall the TachyonDesk service?"
+    IDS_INSTALL_SERVICE_QUESTION "Do you want to install TachyonDesk as service?"
+    IDS_STOP_SERVICE_QUESTION "Do you want to stop the TachyonDesk service?"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_START_SERVICE_QUESTION "Do you want to start the UltraVNC service?"
+    IDS_START_SERVICE_QUESTION "Do you want to start the TachyonDesk service?"
     IDS_SYSTEM_CAPTION      "System"
     IDS_SERVICE_CAPTION     "Service"
     IDS_CURRENT_DRIVER_OLD  "Current driver is too old for this version\nUpdate driver or disable Video hook driver\n in the Server Settings"

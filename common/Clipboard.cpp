@@ -24,6 +24,8 @@
 #include <windows.h>
 
 #include <string>
+#include <vector>
+#include <cstdint>
 
 #include <rdr/MemInStream.h>
 #include <rdr/ZlibOutStream.h>
@@ -184,12 +186,12 @@ CARD32 ExtendedClipboardDataMessage::GetFlags()
 const UINT ClipboardSettings::formatUnicodeText =	CF_UNICODETEXT;
 const UINT ClipboardSettings::formatRTF =			RegisterClipboardFormatW(L"Rich Text Format");
 const UINT ClipboardSettings::formatHTML =			RegisterClipboardFormatW(L"HTML Format");
-const UINT ClipboardSettings::formatDIB =			CF_DIBV5;
+const UINT ClipboardSettings::formatDIB =			CF_DIB;
 
 const int ClipboardSettings::defaultLimitText =		((int)0x00A00000); // 10 megabytes uncompressed. Pretty huge, but not a problem for a LAN. Better than the previous no limit, though.
 const int ClipboardSettings::defaultLimitRTF =		((int)0x00200000); // Limit these to 2 megabytes so they don't end up adding too much strain by being enabled by default
 const int ClipboardSettings::defaultLimitHTML =		((int)0x00200000); // besides, every 2mb rtf/html data I have seen will DEFLATE very well.
-const int ClipboardSettings::defaultLimitDIB =		((int)0x00000000); // no DIB by default
+const int ClipboardSettings::defaultLimitDIB =		((int)0x02800000); // 40 megabytes uncompressed (supports large/4K screenshots)
 
 const int ClipboardSettings::defaultLimit =			((int)0x00200000);
 
@@ -222,10 +224,10 @@ void ClipboardSettings::PrepareCapsPacket(ExtendedClipboardDataMessage& extended
 	extendedDataMessage.m_pExtendedData->flags = Swap32IfLE(m_myCaps);
 
 	// now include our limits in order of enum value
-	extendedDataMessage.AppendInt(defaultLimitText);
-	extendedDataMessage.AppendInt(defaultLimitRTF);
-	extendedDataMessage.AppendInt(defaultLimitHTML);
-	extendedDataMessage.AppendInt(defaultLimitDIB);
+	extendedDataMessage.AppendInt(m_nLimitText);
+	extendedDataMessage.AppendInt(m_nLimitRTF);
+	extendedDataMessage.AppendInt(m_nLimitHTML);
+	extendedDataMessage.AppendInt(m_nLimitDIB);
 }
 
 void ClipboardSettings::HandleCapsPacket(ExtendedClipboardDataMessage& extendedDataMessage, bool bSetLimits)
@@ -274,8 +276,15 @@ void ClipboardSettings::HandleCapsPacket(ExtendedClipboardDataMessage& extendedD
 }
 
 ClipboardHolder::ClipboardHolder(HWND hwndOwner)
+	: m_bIsOpen(false)
 {
-	m_bIsOpen = ::OpenClipboard(hwndOwner) ? true : false;
+	for (int attempt = 0; attempt < 10; ++attempt) {
+		if (::OpenClipboard(hwndOwner)) {
+			m_bIsOpen = true;
+			break;
+		}
+		::Sleep(15);
+	}
 }
 
 ClipboardHolder::~ClipboardHolder()
@@ -314,6 +323,226 @@ void ClipboardData::FreeData()
 	m_pDataRTF = NULL;
 	m_pDataHTML = NULL;
 	m_pDataDIB = NULL;
+}
+
+static bool NormalizeDibTo24BppBI_RGB(const BYTE* pSrc, size_t srcLen, BYTE** ppOut, int* pOutLen)
+{
+	if (!pSrc || !ppOut || !pOutLen || srcLen < sizeof(BITMAPINFOHEADER)) {
+		return false;
+	}
+	*ppOut = NULL;
+	*pOutLen = 0;
+
+	const BITMAPINFOHEADER* bih = (const BITMAPINFOHEADER*)pSrc;
+	if (bih->biSize < sizeof(BITMAPINFOHEADER) || bih->biSize > srcLen) {
+		return false;
+	}
+	if (bih->biWidth <= 0 || bih->biWidth > 16384) {
+		return false;
+	}
+	int64_t absHeight = (bih->biHeight < 0) ? -(int64_t)bih->biHeight : (int64_t)bih->biHeight;
+	if (absHeight <= 0 || absHeight > 16384) {
+		return false;
+	}
+
+	uint32_t width = (uint32_t)bih->biWidth;
+	uint32_t height = (uint32_t)absHeight;
+	uint64_t dstStride = ((uint64_t)width * 3ULL + 3ULL) & ~3ULL;
+	uint64_t dstPixelBytes = dstStride * (uint64_t)height;
+	uint64_t dstTotal = sizeof(BITMAPINFOHEADER) + dstPixelBytes;
+	if (dstTotal > 64ULL * 1024 * 1024) {
+		return false;
+	}
+
+	// Fast path 1: already a clean bottom-up 24bpp BI_RGB BITMAPINFOHEADER
+	if (bih->biSize == sizeof(BITMAPINFOHEADER) &&
+		bih->biCompression == BI_RGB &&
+		bih->biBitCount == 24 &&
+		bih->biHeight > 0 &&
+		bih->biPlanes == 1 &&
+		bih->biClrUsed == 0 &&
+		dstTotal <= srcLen) {
+		BYTE* out = new BYTE[(size_t)dstTotal];
+		memcpy(out, pSrc, (size_t)dstTotal);
+		((BITMAPINFOHEADER*)out)->biSizeImage = (DWORD)dstPixelBytes;
+		*ppOut = out;
+		*pOutLen = (int)dstTotal;
+		return true;
+	}
+
+	// Fast path 2: pure C++ 32bpp or top-down 24bpp BI_RGB BITMAPINFOHEADER
+	if (bih->biSize == sizeof(BITMAPINFOHEADER) &&
+		bih->biCompression == BI_RGB &&
+		(bih->biBitCount == 24 || bih->biBitCount == 32) &&
+		bih->biPlanes == 1 &&
+		bih->biClrUsed == 0) {
+		uint64_t bppBytes = (uint64_t)(bih->biBitCount / 8);
+		uint64_t srcStride = ((uint64_t)width * bppBytes + 3ULL) & ~3ULL;
+		uint64_t srcRequired = sizeof(BITMAPINFOHEADER) + srcStride * (uint64_t)height;
+		if (srcRequired <= srcLen) {
+			BYTE* out = new BYTE[(size_t)dstTotal];
+			BITMAPINFOHEADER* outBih = (BITMAPINFOHEADER*)out;
+			memset(outBih, 0, sizeof(BITMAPINFOHEADER));
+			outBih->biSize = sizeof(BITMAPINFOHEADER);
+			outBih->biWidth = (LONG)width;
+			outBih->biHeight = (LONG)height;
+			outBih->biPlanes = 1;
+			outBih->biBitCount = 24;
+			outBih->biCompression = BI_RGB;
+			outBih->biSizeImage = (DWORD)dstPixelBytes;
+			outBih->biXPelsPerMeter = bih->biXPelsPerMeter;
+			outBih->biYPelsPerMeter = bih->biYPelsPerMeter;
+
+			const BYTE* srcPixels = pSrc + sizeof(BITMAPINFOHEADER);
+			BYTE* dstPixels = out + sizeof(BITMAPINFOHEADER);
+			bool topDown = (bih->biHeight < 0);
+			uint64_t rowCopyBytes = (uint64_t)width * 3ULL;
+
+			for (uint32_t y = 0; y < height; ++y) {
+				uint32_t srcY = topDown ? (height - 1 - y) : y;
+				const BYTE* srcRow = srcPixels + (size_t)srcY * (size_t)srcStride;
+				BYTE* dstRow = dstPixels + (size_t)y * (size_t)dstStride;
+				if (bppBytes == 3) {
+					memcpy(dstRow, srcRow, (size_t)rowCopyBytes);
+				} else {
+					for (uint32_t x = 0; x < width; ++x) {
+						dstRow[x * 3 + 0] = srcRow[x * 4 + 0];
+						dstRow[x * 3 + 1] = srcRow[x * 4 + 1];
+						dstRow[x * 3 + 2] = srcRow[x * 4 + 2];
+					}
+				}
+				if (dstStride > rowCopyBytes) {
+					memset(dstRow + rowCopyBytes, 0, (size_t)(dstStride - rowCopyBytes));
+				}
+			}
+
+			*ppOut = out;
+			*pOutLen = (int)dstTotal;
+			return true;
+		}
+	}
+
+	// General GDI path: handles CF_DIBV5, BITMAPV4HEADER, BI_BITFIELDS, paletted, RLE, etc.
+	size_t offset = bih->biSize;
+	if (bih->biSize == sizeof(BITMAPINFOHEADER) && bih->biCompression == BI_BITFIELDS) {
+		offset += 12;
+	} else if (bih->biBitCount <= 8) {
+		DWORD colors = bih->biClrUsed ? bih->biClrUsed : (1u << bih->biBitCount);
+		offset += (size_t)colors * sizeof(RGBQUAD);
+	} else if (bih->biClrUsed > 0) {
+		offset += (size_t)bih->biClrUsed * sizeof(RGBQUAD);
+	}
+	if (bih->biSize >= sizeof(BITMAPV5HEADER)) {
+		const BITMAPV5HEADER* v5 = (const BITMAPV5HEADER*)pSrc;
+		if (v5->bV5ProfileData == offset && v5->bV5ProfileSize > 0) {
+			offset += v5->bV5ProfileSize;
+		}
+	}
+	if (offset >= srcLen) {
+		return false;
+	}
+
+	BITMAPINFO dstBi;
+	memset(&dstBi, 0, sizeof(dstBi));
+	dstBi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	dstBi.bmiHeader.biWidth = (LONG)width;
+	dstBi.bmiHeader.biHeight = (LONG)height;
+	dstBi.bmiHeader.biPlanes = 1;
+	dstBi.bmiHeader.biBitCount = 24;
+	dstBi.bmiHeader.biCompression = BI_RGB;
+	dstBi.bmiHeader.biSizeImage = (DWORD)dstPixelBytes;
+
+	HDC hdc = ::GetDC(NULL);
+	if (!hdc) {
+		return false;
+	}
+	void* pDstBits = NULL;
+	HBITMAP hDstBmp = ::CreateDIBSection(hdc, &dstBi, DIB_RGB_COLORS, &pDstBits, NULL, 0);
+	HDC memDc = hDstBmp ? ::CreateCompatibleDC(hdc) : NULL;
+	bool ok = false;
+
+	if (hDstBmp && memDc && pDstBits) {
+		HGDIOBJ oldObj = ::SelectObject(memDc, hDstBmp);
+		int copied = ::StretchDIBits(
+			memDc,
+			0, 0, (int)width, (int)height,
+			0, 0, (int)width, (int)height,
+			pSrc + offset,
+			(const BITMAPINFO*)pSrc,
+			DIB_RGB_COLORS,
+			SRCCOPY);
+		::GdiFlush();
+		if (copied > 0) {
+			BYTE* out = new BYTE[(size_t)dstTotal];
+			memcpy(out, &dstBi.bmiHeader, sizeof(BITMAPINFOHEADER));
+			memcpy(out + sizeof(BITMAPINFOHEADER), pDstBits, (size_t)dstPixelBytes);
+			*ppOut = out;
+			*pOutLen = (int)dstTotal;
+			ok = true;
+		}
+		::SelectObject(memDc, oldObj);
+	}
+
+	if (memDc) ::DeleteDC(memDc);
+	if (hDstBmp) ::DeleteObject(hDstBmp);
+	::ReleaseDC(NULL, hdc);
+	return ok;
+}
+
+static bool ExtractDibFromHBitmap(HBITMAP hBmp, BYTE** ppOut, int* pOutLen)
+{
+	if (!hBmp || !ppOut || !pOutLen) {
+		return false;
+	}
+	*ppOut = NULL;
+	*pOutLen = 0;
+
+	BITMAP bm;
+	memset(&bm, 0, sizeof(bm));
+	if (::GetObject(hBmp, sizeof(BITMAP), &bm) == 0) {
+		return false;
+	}
+	if (bm.bmWidth <= 0 || bm.bmHeight <= 0 || bm.bmWidth > 16384 || bm.bmHeight > 16384) {
+		return false;
+	}
+
+	uint32_t width = (uint32_t)bm.bmWidth;
+	uint32_t height = (uint32_t)bm.bmHeight;
+	uint64_t stride = ((uint64_t)width * 3ULL + 3ULL) & ~3ULL;
+	uint64_t pixelBytes = stride * (uint64_t)height;
+	uint64_t total = sizeof(BITMAPINFOHEADER) + pixelBytes;
+	if (total > 64ULL * 1024 * 1024) {
+		return false;
+	}
+
+	BITMAPINFO bi;
+	memset(&bi, 0, sizeof(bi));
+	bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bi.bmiHeader.biWidth = (LONG)width;
+	bi.bmiHeader.biHeight = (LONG)height;
+	bi.bmiHeader.biPlanes = 1;
+	bi.bmiHeader.biBitCount = 24;
+	bi.bmiHeader.biCompression = BI_RGB;
+	bi.bmiHeader.biSizeImage = (DWORD)pixelBytes;
+
+	BYTE* out = new BYTE[(size_t)total];
+	memset(out, 0, (size_t)total);
+	memcpy(out, &bi.bmiHeader, sizeof(BITMAPINFOHEADER));
+
+	HDC hdc = ::GetDC(NULL);
+	int rows = 0;
+	if (hdc) {
+		rows = ::GetDIBits(hdc, hBmp, 0, (UINT)height, out + sizeof(BITMAPINFOHEADER), &bi, DIB_RGB_COLORS);
+		::ReleaseDC(NULL, hdc);
+	}
+
+	if (rows > 0) {
+		*ppOut = out;
+		*pOutLen = (int)total;
+		return true;
+	}
+	delete[] out;
+	return false;
 }
 
 bool ClipboardData::Load(HWND hwndOwner) // will return false on failure
@@ -360,9 +589,12 @@ bool ClipboardData::Load(HWND hwndOwner) // will return false on failure
 					if (nFinalConvertedSize > 0) {
 						m_lengthText = nFinalConvertedSize;
 
+						BYTE tag = 1;
+						m_crc = crc32(m_crc, &tag, 1);
 						m_crc = crc32(m_crc, m_pDataText, nFinalConvertedSize);
 					} else {
 						delete[] m_pDataText;
+						m_pDataText = NULL;
 					}
 				}
 
@@ -390,6 +622,9 @@ bool ClipboardData::Load(HWND hwndOwner) // will return false on failure
 				memcpy(m_pDataRTF, pData, nLength);
 
 				m_lengthRTF = nLength;
+				BYTE tag = 2;
+				m_crc = crc32(m_crc, &tag, 1);
+				m_crc = crc32(m_crc, m_pDataRTF, nLength);
 
 				GlobalUnlock(hRTF);
 			}
@@ -415,34 +650,54 @@ bool ClipboardData::Load(HWND hwndOwner) // will return false on failure
 				memcpy(m_pDataHTML, pData, nLength);
 
 				m_lengthHTML = nLength;
+				BYTE tag = 3;
+				m_crc = crc32(m_crc, &tag, 1);
+				m_crc = crc32(m_crc, m_pDataHTML, nLength);
 
 				GlobalUnlock(hHTML);
 			}
 		}
 	}
 
-	// DIB
+	// DIB (prefer CF_DIB, fall back to CF_BITMAP or CF_DIBV5, always normalize to 24bpp BI_RGB CF_DIB)
 	{
 		m_lengthDIB = 0;
 
-		HANDLE hDIB = NULL;
-		if (IsClipboardFormatAvailable(ClipboardSettings::formatDIB)) {
-			hDIB = ::GetClipboardData(ClipboardSettings::formatDIB);
+		if (IsClipboardFormatAvailable(CF_DIB)) {
+			HANDLE hDIB = ::GetClipboardData(CF_DIB);
+			if (hDIB) {
+				BYTE* pData = (BYTE*)GlobalLock(hDIB);
+				SIZE_T nLength = GlobalSize(hDIB);
+				if (pData != NULL && nLength > 0) {
+					NormalizeDibTo24BppBI_RGB(pData, nLength, &m_pDataDIB, &m_lengthDIB);
+					GlobalUnlock(hDIB);
+				}
+			}
 		}
 
-		if (hDIB) {
-			BYTE* pData = (BYTE*)GlobalLock(hDIB);
-			int nLength = (int)GlobalSize(hDIB);
-
-			if (pData != NULL && nLength > 0) {
-				
-				m_pDataDIB = new BYTE[nLength];
-				memcpy(m_pDataDIB, pData, nLength);
-
-				m_lengthDIB = nLength;
-
-				GlobalUnlock(hDIB);
+		if (m_pDataDIB == NULL && IsClipboardFormatAvailable(CF_BITMAP)) {
+			HBITMAP hBmp = (HBITMAP)::GetClipboardData(CF_BITMAP);
+			if (hBmp) {
+				ExtractDibFromHBitmap(hBmp, &m_pDataDIB, &m_lengthDIB);
 			}
+		}
+
+		if (m_pDataDIB == NULL && IsClipboardFormatAvailable(CF_DIBV5)) {
+			HANDLE hDIB5 = ::GetClipboardData(CF_DIBV5);
+			if (hDIB5) {
+				BYTE* pData = (BYTE*)GlobalLock(hDIB5);
+				SIZE_T nLength = GlobalSize(hDIB5);
+				if (pData != NULL && nLength > 0) {
+					NormalizeDibTo24BppBI_RGB(pData, nLength, &m_pDataDIB, &m_lengthDIB);
+					GlobalUnlock(hDIB5);
+				}
+			}
+		}
+
+		if (m_lengthDIB > 0 && m_pDataDIB != NULL) {
+			BYTE tag = 4;
+			m_crc = crc32(m_crc, &tag, 1);
+			m_crc = crc32(m_crc, m_pDataDIB, m_lengthDIB);
 		}
 	}
 
@@ -481,11 +736,13 @@ bool ClipboardData::Restore(HWND hwndOwner, ExtendedClipboardDataMessage& extend
 	if (extendedClipboardDataMessage.HasFlag(clipText)) {
 		length = (int)compressedStream.readU32();
 
-		if (length > 0) {
+		if (length > 0 && length <= 104857600) {
 			// get the incoming UTF-8 text
 			BYTE* pIncomingText = new BYTE[length];
 			compressedStream.readBytes(pIncomingText, length);
 
+			BYTE tag = 1;
+			m_crc = crc32(m_crc, &tag, 1);
 			m_crc = crc32(m_crc, pIncomingText, length);
 
 			// now we have to translate to UTF-16
@@ -529,7 +786,7 @@ bool ClipboardData::Restore(HWND hwndOwner, ExtendedClipboardDataMessage& extend
 	if (extendedClipboardDataMessage.HasFlag(clipRTF)) {
 		length = (int)compressedStream.readU32();
 
-		if (length > 0) {
+		if (length > 0 && length <= 104857600) {
 			HGLOBAL hData = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, length);
 
 			if (!hData) return false;
@@ -538,6 +795,10 @@ bool ClipboardData::Restore(HWND hwndOwner, ExtendedClipboardDataMessage& extend
 
 			if (pData) {
 				compressedStream.readBytes(pData, length);
+
+				BYTE tag = 2;
+				m_crc = crc32(m_crc, &tag, 1);
+				m_crc = crc32(m_crc, pData, length);
 
 				GlobalUnlock(hData);
 
@@ -558,7 +819,7 @@ bool ClipboardData::Restore(HWND hwndOwner, ExtendedClipboardDataMessage& extend
 	if (extendedClipboardDataMessage.HasFlag(clipHTML)) {
 		length = (int)compressedStream.readU32();
 
-		if (length > 0) {
+		if (length > 0 && length <= 104857600) {
 			HGLOBAL hData = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, length);
 
 			if (!hData) return false;
@@ -567,6 +828,10 @@ bool ClipboardData::Restore(HWND hwndOwner, ExtendedClipboardDataMessage& extend
 
 			if (pData) {
 				compressedStream.readBytes(pData, length);
+
+				BYTE tag = 3;
+				m_crc = crc32(m_crc, &tag, 1);
+				m_crc = crc32(m_crc, pData, length);
 
 				GlobalUnlock(hData);
 
@@ -587,35 +852,56 @@ bool ClipboardData::Restore(HWND hwndOwner, ExtendedClipboardDataMessage& extend
 	if (extendedClipboardDataMessage.HasFlag(clipDIB)) {
 		length = (int)compressedStream.readU32();
 
-		if (length > 0) {
-			HGLOBAL hData = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, length);
+		if (length > 0 && length <= 104857600) {
+			std::vector<BYTE> rawDib(length);
+			compressedStream.readBytes(rawDib.data(), length);
 
-			if (!hData) return false;
+			BYTE tag = 4;
+			m_crc = crc32(m_crc, &tag, 1);
+			m_crc = crc32(m_crc, rawDib.data(), length);
 
-			BYTE* pData = (BYTE*)GlobalLock(hData);
+			BYTE* pNormDib = NULL;
+			int normLen = 0;
+			const BYTE* pOutDib = rawDib.data();
+			int outLen = length;
+			UINT clipFmt = CF_DIB;
 
-			if (pData) {
-				compressedStream.readBytes(pData, length);
-
-				GlobalUnlock(hData);
-
-				if (::SetClipboardData(ClipboardSettings::formatDIB, hData)) {
-					hData = NULL;
-					m_lengthDIB = length;
-				} else {
-					bFailed = true;
-				}
+			if (NormalizeDibTo24BppBI_RGB(rawDib.data(), rawDib.size(), &pNormDib, &normLen)) {
+				pOutDib = pNormDib;
+				outLen = normLen;
+				clipFmt = CF_DIB;
+			} else if (length >= (int)sizeof(BITMAPV5HEADER) &&
+				((const BITMAPINFOHEADER*)rawDib.data())->biSize == sizeof(BITMAPV5HEADER)) {
+				clipFmt = CF_DIBV5;
 			}
 
+			HGLOBAL hData = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, outLen);
 			if (hData) {
-				GlobalFree(hData);
+				BYTE* pData = (BYTE*)GlobalLock(hData);
+				if (pData) {
+					memcpy(pData, pOutDib, outLen);
+					GlobalUnlock(hData);
+					if (::SetClipboardData(clipFmt, hData)) {
+						hData = NULL;
+						m_lengthDIB = outLen;
+					} else {
+						bFailed = true;
+					}
+				}
+				if (hData) {
+					GlobalFree(hData);
+				}
+			} else {
+				bFailed = true;
 			}
+
+			delete[] pNormDib;
 		}
 	}
 
 	// we can ignore everything else
 
-	return true;
+	return !bFailed;
 }
 
 Clipboard::Clipboard(CARD32 caps)
@@ -665,7 +951,8 @@ bool Clipboard::UpdateClipTextEx(ClipboardData& clipboardData, CARD32 overrideFl
 
 		rdr::MemOutStream memStream;
 		{
-			rdr::ZlibOutStream compressedStream(&memStream, 0, 9); //Z_BEST_COMPRESSION
+			int compLevel = (clipboardData.m_lengthDIB > 0) ? 1 : 3;
+			rdr::ZlibOutStream compressedStream(&memStream, 0, compLevel);
 
 			if (clipboardData.m_lengthText != 0) {
 				extendedClipboardDataNotifyMessage.AddFlag(clipText);

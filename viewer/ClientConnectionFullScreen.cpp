@@ -16,6 +16,7 @@
 #include "stdhdrs.h"
 #include "vncviewer.h"
 #include "ClientConnection.h"
+#include "FileManagerWindow.h"
 #include "FullScreenTitleBar.h" //Added by: Lars Werner (http://lars.werner.no)
 #include "display.h"
 
@@ -136,6 +137,8 @@ void ClientConnection::RealiseFullScreenMode()
 		}
 
 		SetWindowPos(m_hwndMain, HWND_TOPMOST, x, y, cx, cy, SWP_FRAMECHANGED);
+		if (m_fileWindow && m_fileWindow->Hwnd())
+			SetWindowPos(m_fileWindow->Hwnd(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 		ShowWindow(m_hwndMain, SW_SHOW);
         TitleBar.MoveToMonitor(hMonitor);
 		// adzm - 2010-07 - Extended clipboard
@@ -163,6 +166,8 @@ void ClientConnection::RealiseFullScreenMode()
 		style |= WS_DLGFRAME | WS_THICKFRAME | WS_CAPTION;
 		SetWindowLong(m_hwndMain, GWL_STYLE, style);
 		SetWindowPos(m_hwndMain, HWND_NOTOPMOST, 0,0,100,100, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED |SWP_NOREDRAW); //Modified by: Lars Werner (http://lars.werner.no) - Reason: Bugfix, The framework got invisible after moving, so a NCCALCSIZE needed to be called!
+		if (m_fileWindow && m_fileWindow->Hwnd())
+			SetWindowPos(m_fileWindow->Hwnd(), HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 		// adzm - 2010-07 - Extended clipboard
 		CheckMenuItem(m_hPopupMenuDisplay, ID_FULLSCREEN, MF_BYCOMMAND|MF_UNCHECKED);
 		TitleBar.DisplayWindow(FALSE, TRUE); //Added by: Lars Werner (http://lars.werner.no)

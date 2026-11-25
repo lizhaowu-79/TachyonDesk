@@ -38,7 +38,7 @@ const char HTTP_MSG_OK[] = "HTTP/1.0 200 OK\r\n\r\n";
 
 const char HTTP_MSG_NOSOCKCONN [] =
 "<HTML>\n"
-"  <HEAD><TITLE>UltraVNC desktop</TITLE></HEAD>\n"
+"  <HEAD><TITLE>TachyonDesk</TITLE></HEAD>\n"
 "  <BODY>\n"
 "    <H1>Connections Disabled</H1>\n"
 "    The requested desktop is not configured to accept incoming connections.\n"

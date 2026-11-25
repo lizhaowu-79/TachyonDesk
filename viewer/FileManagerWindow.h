@@ -33,9 +33,11 @@
 #include <commctrl.h>
 
 #include <atomic>
+#include <condition_variable>
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -65,6 +67,7 @@ public:
 	HWND Hwnd() const { return m_hwnd; }
 
 private:
+	struct ConflictPrompt;
 	enum PaneId { kLocal = 0, kRemote = 1 };
 
 	struct Item {
@@ -151,6 +154,8 @@ private:
 	void RefreshQueue();
 	void QueueCustomDraw(NMLVCUSTOMDRAW* cd, LRESULT& result);
 	fileman::ConflictChoice AskConflict(const fileman::Conflict& c, bool& applyToAll);
+	void CancelActiveConflict();
+	static HRESULT CALLBACK ConflictDialogCallback(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, LONG_PTR ref);
 
 	LRESULT OnNotify(NMHDR* hdr);
 	void OnListDispInfo(Pane& p, NMLVDISPINFOW* di);
@@ -172,6 +177,11 @@ private:
 	bool m_closing = false;
 	std::vector<fileman::TransferItem> m_queueItems;  // snapshot shown in the list
 	std::atomic<bool> m_queueDirty{false};
+	std::shared_ptr<std::atomic<bool>> m_windowAlive;
+	std::shared_ptr<ConflictPrompt> m_activeConflict;
+	HWND m_conflictDialog = NULL;
+	bool m_inConflictDialog = false;
+	bool m_destroyDeferred = false;
 
 	UINT m_dpi = 96;
 	HFONT m_font = NULL, m_boldFont = NULL, m_iconFont = NULL;

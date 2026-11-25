@@ -395,7 +395,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR szCmdLin
 	info.cb = sizeof(CR_INSTALL_INFO);
 	info.pszAppName = _T("UVNC");
 	info.pszAppVersion = _T("1.4.4.0-dev");
-	info.pszEmailSubject = _T("UltraVNC Viewer 1.4.4.0-dev Error Report");
+	info.pszEmailSubject = _T("TachyonDesk Viewer Error Report");
 	info.pszEmailTo = _T("uvnc@skynet.be");
 	info.uPriorities[CR_SMAPI] = 1; // Third try send report over Simple MAPI    
 	// Install all available exception handlers
@@ -500,7 +500,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR szCmdLin
   if (hFile == INVALID_HANDLE_VALUE) {
 	  // Try AppData folder
 	  if (SHGetFolderPathW(0, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, optionsFile) == S_OK) {
-		  wcscat_s(optionsFile, _countof(optionsFile), L"\\UltraVNC\\");
+		  wcscat_s(optionsFile, _countof(optionsFile), L"\\TachyonDesk\\");
 		  wcscat_s(optionsFile, _countof(optionsFile), L"options.vnc");
 		  hFile = CreateFileW(optionsFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	  }

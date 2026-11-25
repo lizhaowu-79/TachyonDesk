@@ -1086,7 +1086,7 @@ vncDesktop::InitBitmap()
 		MessageBoxSecure(
 			NULL,
 			"vncDesktop : root device doesn't support BitBlt\n"
-			"UltraVNC Server cannot be used with this graphics device driver",
+			"TachyonDesk Server cannot be used with this graphics device driver",
 			szAppName,
 			MB_ICONSTOP | MB_OK
 		);
@@ -1097,7 +1097,7 @@ vncDesktop::InitBitmap()
 		MessageBoxSecure(
 			NULL,
 			"vncDesktop : memory device doesn't support GetDIBits\n"
-			"UltraVNC Server cannot be used with this graphics device driver",
+			"TachyonDesk Server cannot be used with this graphics device driver",
 			szAppName,
 			MB_ICONSTOP | MB_OK
 		);
@@ -1215,7 +1215,7 @@ vncDesktop::SetPixFormat()
 			MessageBoxSecure(
 				NULL,
 				"vncDesktop : current display is PLANAR, not CHUNKY!\n"
-				"UltraVNC Server cannot be used with this graphics device driver",
+				"TachyonDesk Server cannot be used with this graphics device driver",
 				szAppName,
 				MB_ICONSTOP | MB_OK
 			);
@@ -1684,7 +1684,7 @@ vncDesktop::WriteMessageOnScreenPreConnect(BYTE *scrBuff, UINT scrBuffSize)
 
 	HFONT hFont, hOldFont;
 	SetRect(&rect, 0, 10, 640, 640);
-    char *tout = "UltraVNC Server Experimental pre-connect window \n";
+    char *tout = "TachyonDesk Server Experimental pre-connect window \n";
 	DrawText(m_hmemdc, tout, (int)strlen(tout), &rect, DT_CENTER);
 
 
@@ -2029,7 +2029,7 @@ void vncDesktop::SetClipText(LPSTR rfbStr)
 }
 
 // adzm - 2010-07 - Extended clipboard
-void vncDesktop::SetClipTextEx(ExtendedClipboardDataMessage& extendedClipboardDataMessage)
+void vncDesktop::SetClipTextEx(ExtendedClipboardDataMessage& extendedClipboardDataMessage, DWORD* pOutCrc)
 {
 	bool bRestored = false;
 	{
@@ -2038,6 +2038,9 @@ void vncDesktop::SetClipTextEx(ExtendedClipboardDataMessage& extendedClipboardDa
 		if (newClipboard.Restore(Window(), extendedClipboardDataMessage)) {
 			vnclog.Print(LL_INTINFO, VNCLOG("Set extended clipboard data\n"));
 
+			if (pOutCrc) {
+				*pOutCrc = newClipboard.m_crc;
+			}
 			bRestored = true;
 			newClipboard.FreeData();
 		}

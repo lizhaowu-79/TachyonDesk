@@ -75,9 +75,10 @@ struct QueueCallbacks {
 	std::function<void()> changed;
 	// An item finished (refresh the target folder). Worker thread.
 	std::function<void(const TransferItem&)> finished;
-	// The target exists: what now? Blocks the worker until answered.
-	// applyToAll: use the answer for the remaining conflicts.
-	std::function<ConflictChoice(const Conflict&, bool& applyToAll)> askConflict;
+	// The target exists: what now? Blocks the worker until answered or
+	// cancelled (cancel becomes true). applyToAll: use the answer for the
+	// remaining conflicts.
+	std::function<ConflictChoice(const Conflict&, bool& applyToAll, const std::atomic<bool>& cancel)> askConflict;
 };
 
 class FileTransferQueue {

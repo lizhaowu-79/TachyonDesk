@@ -19,6 +19,7 @@
 #include <windowsx.h>
 
 #include <algorithm>
+#include <chrono>
 
 #ifdef _MSC_VER
 #pragma comment(lib, "comctl32.lib")
@@ -38,9 +39,10 @@ enum : UINT {
 	WM_FM_REMOTE_LIST = WM_APP + 10,  // wParam: pane seq, lParam: ListResult*
 	WM_FM_REMOTE_ROOTS,               // lParam: RootsResult*
 	WM_FM_REMOTE_OP,                  // lParam: OpResult*
-	WM_FM_CONFLICT,                   // sent; wParam: Conflict*, lParam: ConflictAnswer*
+	WM_FM_CONFLICT,                   // posted; lParam: std::shared_ptr<ConflictPrompt>*
 	WM_FM_QUEUE,                      // the queue changed
 	WM_FM_FINISHED,                   // lParam: TransferItem*
+	WM_FM_CONFLICT_CANCEL,            // dismiss any open conflict dialog
 };
 
 enum : int {
@@ -71,10 +73,6 @@ struct OpResult {
 	enum Kind { kMkDir, kRename, kDelete } kind;
 	Result result;
 	std::wstring name;  // new folder / new name, to select afterwards
-};
-struct ConflictAnswer {
-	ConflictChoice choice = ConflictChoice::Cancel;
-	bool all = false;
 };
 
 int CtlId(int pane, int id)
@@ -215,6 +213,16 @@ FileManagerWindow* FileManagerWindow::Open(const Options& options)
 	return self;
 }
 
+struct FileManagerWindow::ConflictPrompt {
+	Conflict conflict;
+	std::mutex mutex;
+	std::condition_variable cond;
+	bool done = false;
+	bool cancelled = false;
+	ConflictChoice choice = ConflictChoice::Cancel;
+	bool all = false;
+};
+
 FileManagerWindow::FileManagerWindow(const Options& options) : m_options(options), m_client(options.client)
 {
 	// Error texts from the file engine in the user's language.
@@ -222,6 +230,7 @@ FileManagerWindow::FileManagerWindow(const Options& options) : m_options(options
 	m_panes[kLocal].id = kLocal;
 	m_panes[kRemote].id = kRemote;
 	m_cookie = static_cast<uint32_t>(GetTickCount()) ^ static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this));
+	m_windowAlive = std::make_shared<std::atomic<bool>>(true);
 	// Drag and drop needs OLE on this (the UI) thread.
 	const HRESULT hr = OleInitialize(NULL);
 	m_ole = SUCCEEDED(hr);
@@ -249,7 +258,13 @@ void FileManagerWindow::Activate()
 void FileManagerWindow::Destroy()
 {
 	m_closing = true;
-	DestroyWindow(m_hwnd);
+	CancelActiveConflict();
+	if (m_inConflictDialog) {
+		m_destroyDeferred = true;
+		return;
+	}
+	if (m_hwnd && IsWindow(m_hwnd))
+		DestroyWindow(m_hwnd);
 }
 
 LRESULT CALLBACK FileManagerWindow::WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
@@ -538,14 +553,29 @@ LRESULT FileManagerWindow::Handle(UINT msg, WPARAM wp, LPARAM lp)
 			if (!PostMessageW(hwnd, WM_FM_FINISHED, 0, reinterpret_cast<LPARAM>(copy)))
 				delete copy;
 		};
-		qc.askConflict = [hwnd](const Conflict& c, bool& all) {
-			ConflictAnswer answer;
-			DWORD_PTR result = 0;
-			if (!SendMessageTimeoutW(hwnd, WM_FM_CONFLICT, reinterpret_cast<WPARAM>(&c), reinterpret_cast<LPARAM>(&answer),
-				    SMTO_NORMAL, INFINITE, &result))
+		std::shared_ptr<std::atomic<bool>> alive = m_windowAlive;
+		qc.askConflict = [hwnd, alive](const Conflict& c, bool& all, const std::atomic<bool>& cancel) {
+			if (!*alive || cancel)
 				return ConflictChoice::Cancel;
-			all = answer.all;
-			return answer.choice;
+			auto prompt = std::make_shared<ConflictPrompt>();
+			prompt->conflict = c;
+			auto* holder = new std::shared_ptr<ConflictPrompt>(prompt);
+			if (!PostMessageW(hwnd, WM_FM_CONFLICT, 0, reinterpret_cast<LPARAM>(holder))) {
+				delete holder;
+				return ConflictChoice::Cancel;
+			}
+			std::unique_lock<std::mutex> lk(prompt->mutex);
+			while (!prompt->done) {
+				if (cancel || !*alive) {
+					prompt->cancelled = true;
+					lk.unlock();
+					PostMessageW(hwnd, WM_FM_CONFLICT_CANCEL, 0, 0);
+					return ConflictChoice::Cancel;
+				}
+				prompt->cond.wait_for(lk, std::chrono::milliseconds(50));
+			}
+			all = prompt->all;
+			return prompt->choice;
 		};
 		m_queue.reset(new FileTransferQueue(*m_client, qc));
 		LoadSettings();
@@ -667,14 +697,43 @@ LRESULT FileManagerWindow::Handle(UINT msg, WPARAM wp, LPARAM lp)
 		return 0;
 	}
 	case WM_FM_CONFLICT: {
-		auto* answer = reinterpret_cast<ConflictAnswer*>(lp);
-		if (m_closing) {
-			answer->choice = ConflictChoice::Cancel;
+		std::unique_ptr<std::shared_ptr<ConflictPrompt>> holder(
+			reinterpret_cast<std::shared_ptr<ConflictPrompt>*>(lp));
+		std::shared_ptr<ConflictPrompt> prompt = holder ? *holder : nullptr;
+		if (!prompt)
 			return 0;
+		{
+			std::lock_guard<std::mutex> lk(prompt->mutex);
+			if (m_closing || prompt->cancelled) {
+				prompt->choice = ConflictChoice::Cancel;
+				prompt->done = true;
+				prompt->cond.notify_all();
+				return 0;
+			}
 		}
-		answer->choice = AskConflict(*reinterpret_cast<const Conflict*>(wp), answer->all);
+		m_activeConflict = prompt;
+		m_inConflictDialog = true;
+		bool applyAll = false;
+		const ConflictChoice choice = AskConflict(prompt->conflict, applyAll);
+		m_inConflictDialog = false;
+		m_conflictDialog = NULL;
+		m_activeConflict.reset();
+		{
+			std::lock_guard<std::mutex> lk(prompt->mutex);
+			prompt->choice = (m_closing || prompt->cancelled) ? ConflictChoice::Cancel : choice;
+			prompt->all = applyAll;
+			prompt->done = true;
+			prompt->cond.notify_all();
+		}
+		if (m_destroyDeferred && m_hwnd && IsWindow(m_hwnd)) {
+			m_destroyDeferred = false;
+			DestroyWindow(m_hwnd);
+		}
 		return 0;
 	}
+	case WM_FM_CONFLICT_CANCEL:
+		CancelActiveConflict();
+		return 0;
 	case WM_FM_REMOTE_LIST: {
 		std::unique_ptr<ListResult> res(reinterpret_cast<ListResult*>(lp));
 		Pane& p = m_panes[kRemote];
@@ -800,23 +859,29 @@ LRESULT FileManagerWindow::Handle(UINT msg, WPARAM wp, LPARAM lp)
 				    Tr(L"TachyonDesk File Transfer"), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES)
 				return 0;
 		}
-		m_closing = true;
-		DestroyWindow(m_hwnd);
+		Destroy();
 		return 0;
 	case WM_DESTROY: {
 		m_closing = true;
+		if (m_windowAlive)
+			*m_windowAlive = false;
+		CancelActiveConflict();
+		MSG m;
+		while (PeekMessageW(&m, m_hwnd, WM_FM_CONFLICT, WM_FM_CONFLICT, PM_REMOVE)) {
+			std::unique_ptr<std::shared_ptr<ConflictPrompt>> holder(
+				reinterpret_cast<std::shared_ptr<ConflictPrompt>*>(m.lParam));
+			if (holder && *holder) {
+				std::lock_guard<std::mutex> lk((*holder)->mutex);
+				(*holder)->cancelled = true;
+				(*holder)->choice = ConflictChoice::Cancel;
+				(*holder)->done = true;
+				(*holder)->cond.notify_all();
+			}
+		}
 		SaveSettings();
 		KillTimer(m_hwnd, kTimerQueue);
 		if (m_queue) {
-			// The worker may be waiting for us (a conflict question): keep
-			// answering sent messages until it has stopped.
 			m_queue->CancelAll();
-			const ULONGLONG until = GetTickCount64() + 15000;
-			while (m_queue->Busy() && GetTickCount64() < until) {
-				MsgWaitForMultipleObjects(0, NULL, FALSE, 50, QS_SENDMESSAGE);
-				MSG m;
-				PeekMessageW(&m, NULL, 0, 0, PM_NOREMOVE | PM_QS_SENDMESSAGE);
-			}
 			m_queue->Shutdown();
 		}
 		// Explorer may still be copying dragged remote files: stop that
@@ -853,14 +918,22 @@ void FileManagerWindow::OnCommand(int id, int code, HWND ctl)
 	if (id == kIdQueueCancel) {
 		const int n = ListView_GetItemCount(m_queueList);
 		bool any = false;
+		bool cancelRunning = false;
 		for (int i = 0; i < n; ++i) {
 			if (ListView_GetItemState(m_queueList, i, LVIS_SELECTED) && i < static_cast<int>(m_queueItems.size())) {
-				m_queue->Cancel(m_queueItems[static_cast<size_t>(i)].id);
+				const TransferItem& item = m_queueItems[static_cast<size_t>(i)];
+				m_queue->Cancel(item.id);
+				if (item.state == ItemState::Running)
+					cancelRunning = true;
 				any = true;
 			}
 		}
-		if (!any)
+		if (!any) {
 			m_queue->CancelAll();
+			cancelRunning = true;
+		}
+		if (cancelRunning)
+			CancelActiveConflict();
 		return;
 	}
 	if (id == kIdQueueClear) {
@@ -1919,8 +1992,45 @@ void FileManagerWindow::QueueCustomDraw(NMLVCUSTOMDRAW* cd, LRESULT& result)
 	}
 }
 
+void FileManagerWindow::CancelActiveConflict()
+{
+	if (m_activeConflict) {
+		std::lock_guard<std::mutex> lk(m_activeConflict->mutex);
+		m_activeConflict->cancelled = true;
+		m_activeConflict->choice = ConflictChoice::Cancel;
+		m_activeConflict->done = true;
+		m_activeConflict->cond.notify_all();
+	}
+	if (m_conflictDialog && IsWindow(m_conflictDialog))
+		SendMessageW(m_conflictDialog, TDM_CLICK_BUTTON, IDCANCEL, 0);
+}
+
+HRESULT CALLBACK FileManagerWindow::ConflictDialogCallback(HWND hwnd, UINT msg, WPARAM, LPARAM, LONG_PTR ref)
+{
+	auto* self = reinterpret_cast<FileManagerWindow*>(ref);
+	if (!self)
+		return S_OK;
+	if (msg == TDN_CREATED) {
+		self->m_conflictDialog = hwnd;
+		bool cancelled = self->m_closing;
+		if (!cancelled && self->m_activeConflict) {
+			std::lock_guard<std::mutex> lk(self->m_activeConflict->mutex);
+			cancelled = self->m_activeConflict->cancelled;
+		}
+		if (cancelled)
+			SendMessageW(hwnd, TDM_CLICK_BUTTON, IDCANCEL, 0);
+		else
+			SetForegroundWindow(hwnd);
+	} else if (msg == TDN_DESTROYED) {
+		if (self->m_conflictDialog == hwnd)
+			self->m_conflictDialog = NULL;
+	}
+	return S_OK;
+}
+
 ConflictChoice FileManagerWindow::AskConflict(const Conflict& c, bool& applyToAll)
 {
+	Activate();
 	const std::wstring name = W(FileNamePart(c.targetPath));
 	const std::wstring where = W(ParentPath(c.targetPath));
 	const std::wstring instruction = TrF(L"\x201C%ls\x201D already exists", name.c_str());
@@ -1946,10 +2056,33 @@ ConflictChoice FileManagerWindow::AskConflict(const Conflict& c, bool& applyToAl
 	tdc.pButtons = buttons;
 	tdc.nDefaultButton = 100;
 	tdc.pszVerificationText = Tr(L"Do this for &all remaining conflicts");
+	tdc.pfCallback = &FileManagerWindow::ConflictDialogCallback;
+	tdc.lpCallbackData = reinterpret_cast<LONG_PTR>(this);
 	int button = IDCANCEL;
 	BOOL all = FALSE;
-	if (FAILED(TaskDialogIndirect(&tdc, &button, NULL, &all)))
+	if (FAILED(TaskDialogIndirect(&tdc, &button, NULL, &all))) {
+		bool cancelled = m_closing;
+		if (!cancelled && m_activeConflict) {
+			std::lock_guard<std::mutex> lk(m_activeConflict->mutex);
+			cancelled = m_activeConflict->cancelled;
+		}
+		if (cancelled)
+			return ConflictChoice::Cancel;
+		auto stripAmp = [](std::wstring s) {
+			s.erase(std::remove(s.begin(), s.end(), L'&'), s.end());
+			return s;
+		};
+		const std::wstring fallback = instruction + L"\n\n" + content + L"\n\n" +
+			stripAmp(Tr(L"&Replace the file")) + L" / " + stripAmp(Tr(L"&Skip this file")) + L" / " + Tr(L"Cancel");
+		const int mb = MessageBoxW(m_hwnd, fallback.c_str(), Tr(L"TachyonDesk File Transfer"),
+			MB_YESNOCANCEL | MB_ICONWARNING | MB_SETFOREGROUND);
+		applyToAll = false;
+		if (mb == IDYES)
+			return ConflictChoice::Overwrite;
+		if (mb == IDNO)
+			return ConflictChoice::Skip;
 		return ConflictChoice::Cancel;
+	}
 	applyToAll = all != FALSE;
 	switch (button) {
 	case 100: return ConflictChoice::Overwrite;

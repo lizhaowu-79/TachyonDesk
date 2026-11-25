@@ -15,7 +15,7 @@
 void CredentialManager::BuildTargetName(const wchar_t* prefix, const wchar_t* host, int port,
                                        wchar_t* target, size_t targetSize)
 {
-    _snwprintf_s(target, targetSize, _TRUNCATE, L"ultravnc:%s:%s:%d", prefix, host, port);
+    _snwprintf_s(target, targetSize, _TRUNCATE, L"tachyondesk:%s:%s:%d", prefix, host, port);
 }
 
 static void BuildVncTargetName(const wchar_t* host, int port, wchar_t* target, size_t targetSize)
@@ -78,7 +78,7 @@ bool CredentialManager::WriteVncPassword(const wchar_t* host, int port, const ch
     cred.Persist = CRED_PERSIST_LOCAL_MACHINE;
     cred.CredentialBlobSize = (DWORD)pwLen;
     cred.CredentialBlob = (LPBYTE)password;
-    cred.UserName = L"UltraVNC";
+    cred.UserName = L"TachyonDesk";
 
     return (CredWriteW(&cred, 0) != FALSE);
 }

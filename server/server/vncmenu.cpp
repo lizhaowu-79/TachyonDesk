@@ -407,9 +407,9 @@ void vncMenu::addMenus()
 		settings->getAllowShutdown() ? MF_ENABLED : MF_GRAYED);
 
 	if (settings->RunningFromExternalService())
-		ModifyMenu(m_hmenu, ID_CLOSE, MF_BYCOMMAND | MF_STRING, ID_CLOSE, "Restart UltraVNC Server");
+		ModifyMenu(m_hmenu, ID_CLOSE, MF_BYCOMMAND | MF_STRING, ID_CLOSE, "Restart TachyonDesk Server");
 	else
-		ModifyMenu(m_hmenu, ID_CLOSE, MF_BYCOMMAND | MF_STRING, ID_CLOSE, "Shutdown UltraVNC Server");
+		ModifyMenu(m_hmenu, ID_CLOSE, MF_BYCOMMAND | MF_STRING, ID_CLOSE, "Shutdown TachyonDesk Server");
 	EnableMenuItem(m_hmenu, ID_KILLCLIENTS,
 		settings->getAllowEditClients() ? MF_ENABLED : MF_GRAYED);
 	EnableMenuItem(m_hmenu, ID_OUTGOING_CONN,
@@ -497,7 +497,7 @@ void vncMenu::setBalloonInfo()
 			: NIF_ICON | NIF_MESSAGE | NIF_STATE | NIF_TIP | NIF_INFO;
 		wcsncpy_s(m_nid.szInfo, m_BalloonInfo, 255);
 		m_nid.szInfo[255] = '\0';
-		wcscpy_s(m_nid.szInfoTitle, L"UltraVNC Connection...");
+		wcscpy_s(m_nid.szInfoTitle, L"TachyonDesk Connection...");
 		m_nid.dwInfoFlags = NIIF_INFO;
 		balloonset = true;
 	}

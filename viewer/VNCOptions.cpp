@@ -224,7 +224,7 @@ VNCOptions::VNCOptions()
 
 	m_szDSMPluginFilename[0] = '\0';
 	setDefaultDocumentPath();
-	_tcscpy_s(m_prefix, _countof(m_prefix), _T("ultravnc_"));
+	_tcscpy_s(m_prefix, _countof(m_prefix), _T("tachyondesk_"));
 	_tcscpy_s(m_imageFormat, _countof(m_imageFormat), _T(".jpeg"));
 
 #ifdef _Gii
@@ -278,7 +278,7 @@ void VNCOptions::setDefaultOptionsFileName(wchar_t* optionfile)
 		CloseHandle(m_hDestFile);
 		return;
 	}
-	const TCHAR* APPDIR = _T("UltraVNC");
+	const TCHAR* APPDIR = _T("TachyonDesk");
 	if (SHGetFolderPathW(0, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, optionfile) == S_OK) {
 		wcscat_s(optionfile, MAX_PATH, L"\\");
 		wcscat_s(optionfile, MAX_PATH, APPDIR);
@@ -303,7 +303,7 @@ TCHAR* VNCOptions::getDefaultOptionsFileName()
 
 void VNCOptions::setDefaultDocumentPath()
 {
-	const TCHAR* APPDIR = _T("UltraVNC");
+	const TCHAR* APPDIR = _T("TachyonDesk");
 	if (SHGetFolderPathW(0, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, m_document_folder) == S_OK) {
 		wcscat_s(m_document_folder, MAX_PATH, L"\\");
 		wcscat_s(m_document_folder, MAX_PATH, APPDIR);

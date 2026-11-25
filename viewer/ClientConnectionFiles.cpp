@@ -103,6 +103,8 @@ void ClientConnection::OnFileChannelEvent(WPARAM event)
 void ClientConnection::OpenFileManager()
 {
 	if (m_fileWindow) {
+		if (m_opts->m_FullScreen && !m_opts->m_fileMode && m_fileWindow->Hwnd())
+			SetWindowPos(m_fileWindow->Hwnd(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 		m_fileWindow->Activate();
 		return;
 	}
@@ -122,6 +124,9 @@ void ClientConnection::OpenFileManager()
 		// The file window is the connection: make sure the desktop window
 		// is out of sight and the file window is in front.
 		ShowWindow(m_hwndMain, SW_HIDE);
+		m_fileWindow->Activate();
+	} else if (m_fileWindow && m_opts->m_FullScreen && m_fileWindow->Hwnd()) {
+		SetWindowPos(m_fileWindow->Hwnd(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 		m_fileWindow->Activate();
 	}
 	if (!m_fileWindow) {

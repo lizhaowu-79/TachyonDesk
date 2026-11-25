@@ -272,6 +272,11 @@ void FileTransferQueue::Run(const std::shared_ptr<Item>& item)
 		if (item->cancel)
 			break;
 		std::string target = task.target;
+		{
+			std::lock_guard<std::mutex> lk(m_mutex);
+			item->info.currentFile = FileNamePart(target);
+		}
+		Notify();
 		bool overwrite = false;
 		Entry existing;
 		const bool exists = TargetExists(dir, target, existing);
@@ -307,7 +312,9 @@ void FileTransferQueue::Run(const std::shared_ptr<Item>& item)
 				c.targetSize = existing.size;
 				c.targetTime = existing.mtime;
 				bool all = false;
-				choice = m_cb.askConflict(c, all);
+				choice = m_cb.askConflict(c, all, item->cancel);
+				if (item->cancel)
+					choice = ConflictChoice::Cancel;
 				if (all && choice != ConflictChoice::Cancel) {
 					std::lock_guard<std::mutex> lk(m_mutex);
 					m_haveDefaultChoice = true;
@@ -324,16 +331,17 @@ void FileTransferQueue::Run(const std::shared_ptr<Item>& item)
 				item->info.doneBytes = (completed += task.size);
 				continue;
 			}
-			if (choice == ConflictChoice::KeepBoth)
+			if (choice == ConflictChoice::KeepBoth) {
 				target = FreeName(dir, target);
-			else
+				{
+					std::lock_guard<std::mutex> lk(m_mutex);
+					item->info.currentFile = FileNamePart(target);
+				}
+				Notify();
+			} else {
 				overwrite = true;
+			}
 		}
-		{
-			std::lock_guard<std::mutex> lk(m_mutex);
-			item->info.currentFile = FileNamePart(target);
-		}
-		Notify();
 		const uint64_t base = completed;
 		auto progress = [&](uint64_t done) {
 			{

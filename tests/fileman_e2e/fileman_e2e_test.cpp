@@ -506,14 +506,28 @@ static void TestQueue()
 	std::atomic<int> asked{0};
 	ConflictChoice answer = ConflictChoice::Skip;
 	bool answerAll = false;
+	bool waitForCancel = false;
+	std::mutex cm;
+	std::condition_variable cc_cv;
+	bool conflictEntered = false;
 	std::mutex fm;
 	std::condition_variable fc;
 	int finished = 0;
 	QueueCallbacks qc;
-	qc.askConflict = [&](const Conflict& c, bool& all) {
+	qc.askConflict = [&](const Conflict& c, bool& all, const std::atomic<bool>& cancel) {
 		++asked;
 		std::printf("conflict: %s (%llu -> %llu bytes)\n", c.targetPath.c_str(),
 			(unsigned long long)c.sourceSize, (unsigned long long)c.targetSize);
+		if (waitForCancel) {
+			{
+				std::lock_guard<std::mutex> lk(cm);
+				conflictEntered = true;
+			}
+			cc_cv.notify_all();
+			for (int i = 0; i < 200 && !cancel; ++i)
+				Sleep(25);
+			return ConflictChoice::Cancel;
+		}
 		all = answerAll;
 		return answer;
 	};
@@ -608,6 +622,23 @@ static void TestQueue()
 	waitFinished(9);
 	snap = q.Snapshot();
 	CHECK(snap.back().state == ItemState::Cancelled);
+
+	// Cancel an item while waiting for a conflict prompt.
+	Sleep(20);
+	WriteBytes(JoinPath(src, "1.txt"), RandomBytes(102, 17));
+	waitForCancel = true;
+	conflictEntered = false;
+	const uint32_t cancelId = q.Add(Direction::Upload, JoinPath(src, "1.txt"), false, 102, JoinPath(dst, "tree"));
+	{
+		std::unique_lock<std::mutex> lk(cm);
+		CHECK(cc_cv.wait_for(lk, std::chrono::seconds(10), [&] { return conflictEntered; }));
+	}
+	q.Cancel(cancelId);
+	waitFinished(10);
+	snap = q.Snapshot();
+	CHECK(snap.back().id == cancelId && snap.back().state == ItemState::Cancelled);
+	waitForCancel = false;
+
 	q.ClearFinished();
 	CHECK(q.Snapshot().empty() && !q.Busy());
 	CHECK(CountTempFiles(g_base) == 0);

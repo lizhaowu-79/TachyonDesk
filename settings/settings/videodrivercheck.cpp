@@ -167,7 +167,7 @@ CheckVideoDriver(bool Box)
                         else
                         {
                             strcat(buf2, "Driver Not Activated, is the viewer current connected?\n");
-                            strcat(buf2, "A Mirrior Driver can only be started if UltraVNC Server is a service or running as admin\n");
+                            strcat(buf2, "A Mirrior Driver can only be started if TachyonDesk Server is a service or running as admin\n");
                         }
                         MessageBox(NULL,buf2,buf,0);
 					}

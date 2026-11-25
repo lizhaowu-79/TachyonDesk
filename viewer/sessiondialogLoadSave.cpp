@@ -34,7 +34,7 @@ void SessionDialog::SaveConnection(HWND hwnd, bool saveAs)
 	swprintf_s(fname, _MAX_PATH, L"%.15s-%d.vnc", m_host_dialog, (disp > 0 && disp < 100) ? disp : m_port);
 	wchar_t buffer[_MAX_PATH];
 	getAppData(buffer);
-	wcscat_s(buffer, _MAX_PATH, L"\\UltraVNC");
+	wcscat_s(buffer, _MAX_PATH, L"\\TachyonDesk");
 	_wmkdir(buffer);
 
 	if ( saveAs) {
@@ -705,7 +705,7 @@ void SessionDialog::IfHostExistLoadSettings(wchar_t *hostname)
 	swprintf_s(fname, _MAX_PATH, L"%.15s-%d.vnc", tmphost, (disp > 0 && disp < 100) ? disp : port);
 	wchar_t buffer[_MAX_PATH];
 	getAppData(buffer);
-	wcscat_s(buffer, _MAX_PATH, L"\\UltraVNC\\");
+	wcscat_s(buffer, _MAX_PATH, L"\\TachyonDesk\\");
 	wcscat_s(buffer, _MAX_PATH, fname);
 	FILE *file = _wfopen(buffer, L"r");
 	bool fileExists = (file != NULL);
@@ -787,7 +787,7 @@ void SessionDialog::SetDefaults()
 	useAllMonitors =0;
 	requestedWidth = 0;
 	requestedHeight = 0;
-	_tcscpy_s(prefix, _countof(prefix), _T("ultravnc_"));
+	_tcscpy_s(prefix, _countof(prefix), _T("tachyondesk_"));
 	_tcscpy_s(imageFormat, _countof(imageFormat), _T(".jpeg"));
 	fAutoAcceptIncoming = false;
 	fAutoAcceptNoDSM = false;

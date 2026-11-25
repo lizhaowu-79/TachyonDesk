@@ -1420,7 +1420,7 @@ BOOL vncClientThread::AuthenticateClient(std::vector<CARD8>& current_auth, bool 
 	{
 	case rfbUltraVNC:
 		m_client->SetUltraViewer(true);
-		vnclog.Print(LL_LOGSCREEN, "UltraVNC Viewer");
+		vnclog.Print(LL_LOGSCREEN, "TachyonDesk Viewer");
 		auth_success = true;
 		break;
 	case rfbUltraVNC_SecureVNCPluginAuth_new:
@@ -2048,7 +2048,7 @@ vncClientThread::AuthMsLogonReject(std::string& auth_message)
 	// Set error message for old viewer
 	auth_message = "This server requires MS-Logon III (secure authentication). "
 		"Your viewer is too old and only supports the legacy MS-Logon II. "
-		"Please upgrade your UltraVNC viewer to version 1.8.2.3 or later.";
+		"Please upgrade your TachyonDesk Viewer.";
 	
 	vnclog.Print(LL_LOGSCREEN, "Auth rejected: Viewer lacks MS-Logon III support (server enforces secure auth)\n");
 	

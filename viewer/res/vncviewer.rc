@@ -1215,7 +1215,7 @@ BEGIN
     ID_BUTTON_DESKTOP       "Select Desktop"
     IDS_WARNING             "WARNING: By default, this session does not use any encryption whatsoever. Please do not use it to send sensitive data unless you are sure your connection is secure (by using an encryption plugin, for instance).\n\n"
     IDS_A1                  "Stop viewer systray"
-    IDS_A2                  "UltraVNC info"
+    IDS_A2                  "TachyonDesk info"
     IDS_A3                  "Error creating listening daemon:\n\r"
     IDS_A4                  "Perhaps another TachyonDesk Viewer is already running?"
     IDS_A5                  "TachyonDesk Viewer error"
@@ -1564,11 +1564,11 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_L77                 "The connected VNC Server doesn't support UltraVNC File Transfer!"
+    IDS_L77                 "The connected VNC Server doesn't support TachyonDesk File Transfer!"
     IDS_L78                 "TachyonDesk Viewer - Unavailable Functionality"
     IDS_L79                 "The File Transfer Window is already open!"
     IDS_L80                 "File Transfer Warning"
-    IDS_L81                 "The connected VNC Server doesn't support UltraVNC Text Chat!"
+    IDS_L81                 "The connected VNC Server doesn't support TachyonDesk Text Chat!"
     IDS_L82                 "TachyonDesk Viewer - Unavailable Functionality"
     IDS_L83                 "The Text Chat Window is already open!"
     IDS_L84                 "Text Chat Warning"

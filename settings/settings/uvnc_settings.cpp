@@ -79,8 +79,8 @@ LONG FTTimeout = 30;
 LONG SocketConnect=1;
 LONG HTTPConnect=1;
 LONG AutoPortSelect=1;
-LONG PortNumber=5900;
-LONG HttpPortNumber=5800;
+LONG PortNumber=5702;
+LONG HttpPortNumber=5701;
 LONG IdleTimeout=0;
 LONG IdleInputTimeout=0;
 

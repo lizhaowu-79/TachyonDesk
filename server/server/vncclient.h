@@ -167,6 +167,7 @@ public:
 	//virtual void UpdateClipText(const char* text);
 	// adzm - 2010-07 - Extended clipboard
 	virtual void UpdateClipTextEx(ClipboardData& clipboardData, CARD32 overrideFlags = 0);
+	void SetClipboardCrc(DWORD crc) { m_clipboard.m_crc = crc; }
 	virtual void UpdatePalette(bool lock);
 	virtual void UpdateLocalFormat(bool lock);
 	int nr_incr_rgn_empty;

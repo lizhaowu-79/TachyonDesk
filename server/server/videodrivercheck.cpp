@@ -56,7 +56,7 @@ BOOL GetDllProductVersion(char* dllName, char *vBuffer, int size)
    DWORD sVersion = GetFileVersionInfoSize(dllName, &rBuffer);
    if (sVersion==0)
 	   {
-		   strcpy_s(vBuffer, 512, "Fail: Using 32-bit UltraVNC Server winvnc.exe with a 64-bit driver? \n");		   
+		   strcpy_s(vBuffer, 512, "Fail: Using 32-bit TachyonDesk Server TachyonServer.exe with a 64-bit driver? \n");		   
 		   return (FALSE);
 		}
 

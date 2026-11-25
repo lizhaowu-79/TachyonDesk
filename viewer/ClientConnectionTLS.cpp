@@ -747,7 +747,7 @@ void ClientConnection::AuthVeNCrypt()
 				tc.cbSize = sizeof(tc);
 				tc.dwFlags = TDF_SIZE_TO_CONTENT;
 				tc.dwCommonButtons = TDCBF_OK_BUTTON | TDCBF_CANCEL_BUTTON;
-				tc.pszWindowTitle = L"UltraVNC Viewer - Warning";
+				tc.pszWindowTitle = L"TachyonDesk Viewer - Warning";
 				tc.hInstance = m_hInstResDLL;
 				tc.pszMainIcon = MAKEINTRESOURCEW(IDR_TRAY);
 				tc.pszMainInstruction = L"Invalid server certificate";

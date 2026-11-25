@@ -479,7 +479,7 @@ BOOL CALLBACK TextChat::TextChatDlgProc(  HWND hWnd,  UINT uMsg,  WPARAM wParam,
 			wcsncpy_s(_this->m_szRemoteName, MAXNAMESIZE, _this->m_pCC->m_desktopName, _TRUNCATE);
 
 			wchar_t szTitle[256] = {};
-			_snwprintf_s(szTitle, 256, _TRUNCATE, L"UltraVNC Viewer - Chat with <%s>", _this->m_szRemoteName);
+			_snwprintf_s(szTitle, 256, _TRUNCATE, L"TachyonDesk Viewer - Chat with <%s>", _this->m_szRemoteName);
 			SetWindowTextW(hWnd, szTitle);
 
 			// Trunc the remote name for display in Chat Area before the first parenthesis, if any.

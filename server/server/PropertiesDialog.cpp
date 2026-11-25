@@ -94,7 +94,7 @@ bool PropertiesDialog::InitDialog(HWND hwnd)
 	const long lTitleBufSize = 256;
 	char szTitle[lTitleBufSize];
 
-	_snprintf_s(szTitle, lTitleBufSize - 1, "UltraVNC Server - Settings - Config file: %s", configFile);
+	_snprintf_s(szTitle, lTitleBufSize - 1, "TachyonDesk Server - Settings - Config file: %s", configFile);
 	SetWindowText(hwnd, szTitle);
 
 	showAdminPanel = false;
@@ -1557,8 +1557,8 @@ bool PropertiesDialog::onCommand( int command, HWND hwnd, int subcommand)
 		isRunningPw = true;
 		DlgChangePassword* dlgChangePassword = new DlgChangePassword();
 		if (dlgChangePassword->ShowDlg(NULL, (!settings->isPasswdSet()) 
-			? "UltraVNC Server - Set Password"
-			: "UltraVNC Server - Change Password", 8)) {
+			? "TachyonDesk Server - Set Password"
+			: "TachyonDesk Server - Change Password", 8)) {
 			char password[1024];
 			strcpy_s(password, dlgChangePassword->getPassword());
 			if (strlen(password) == 0) {
@@ -1584,8 +1584,8 @@ bool PropertiesDialog::onCommand( int command, HWND hwnd, int subcommand)
 		isRunningPwVo = true;
 		DlgChangePassword* dlgChangePassword = new DlgChangePassword();
 		if (dlgChangePassword->ShowDlg(NULL, (!settings->isPasswdSet()) 
-					? "UltraVNC Server - Set View-only Password"
-					: "UltraVNC Server - Change View-only Password", 8)) {
+					? "TachyonDesk Server - Set View-only Password"
+					: "TachyonDesk Server - Change View-only Password", 8)) {
 			char password[1024];
 			strcpy_s(password, dlgChangePassword->getPassword());
 			if (strlen(password) == 0) {
@@ -1610,8 +1610,8 @@ bool PropertiesDialog::onCommand( int command, HWND hwnd, int subcommand)
 		isRunningPwaAdm = true;
 		DlgChangePassword* dlgChangePassword = new DlgChangePassword();
 		if (dlgChangePassword->ShowDlg(NULL, settings->isAdminPasswordSet() 
-					? "UltraVNC Server - Change Admin Password" 
-					: "UltraVNC Server - Set Admin Password", 128)) {
+					? "TachyonDesk Server - Change Admin Password" 
+					: "TachyonDesk Server - Set Admin Password", 128)) {
 			char password[1024];
 			strcpy_s(password, dlgChangePassword->getPassword());
 			settings->setAdminPasswordHash(password);

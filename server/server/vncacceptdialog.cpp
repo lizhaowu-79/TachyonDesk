@@ -119,7 +119,7 @@ BOOL CALLBACK vncAcceptDialog::vncAcceptDlgProc(HWND hwnd,
 			strcpy_s(baseMsg, settings->getAccept_reject_mesg());
 
 			if (strlen(baseMsg) == 0) 
-				strcpy_s(baseMsg,"UltraVNC Server has received an incoming connection from");
+				strcpy_s(baseMsg,"TachyonDesk Server has received an incoming connection from");
 
 			// Base accept/reject message is in the system/INI code page (CP_ACP).
 			// The infoMsg is either UTF-8 (new Unicode path) or CP_ACP (legacy viewer).

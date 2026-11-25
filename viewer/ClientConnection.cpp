@@ -1485,7 +1485,7 @@ void ClientConnection::CreateDisplay()
 	RegisterClass(&wndclass);
 
 	m_hwndcn = CreateWindow(VWR_WND_CLASS_NAME_VIEWER,
-			      _T("UltraVNC Viewer"),
+			      _T("TachyonDesk Viewer"),
 			      winstyle ,
 			      0,
 			      Rtb.top + Rtb.bottom,
@@ -1571,7 +1571,7 @@ void ClientConnection::CreateDisplay()
 				AppendMenu(m_hPopupMenuClipboardFormats, MF_STRING, ID_CLIPBOARD_TEXT,		_T("Text (Unicode)"));
 				AppendMenu(m_hPopupMenuClipboardFormats, MF_STRING, ID_CLIPBOARD_RTF,		_T("Rich Text (RTF)"));
 				AppendMenu(m_hPopupMenuClipboardFormats, MF_STRING, ID_CLIPBOARD_HTML,		_T("HTML"));
-				AppendMenu(m_hPopupMenuClipboardFormats, MF_STRING, ID_CLIPBOARD_DIB,		_T("Image (Send or Request only)"));
+				AppendMenu(m_hPopupMenuClipboardFormats, MF_STRING, ID_CLIPBOARD_DIB,		_T("Image (DIB)"));
 			}
 			AppendMenu(m_hPopupMenuClipboard, MF_POPUP, (UINT_PTR)m_hPopupMenuClipboardFormats, _T("Automatically Synchronized Formats"));
 			AppendMenu(m_hPopupMenuClipboard, MF_SEPARATOR, NULL, NULL);
@@ -1705,7 +1705,7 @@ void ClientConnection::UpdateMenuItems()
 
 	CheckMenuItem(m_hPopupMenuClipboardFormats,
 				  ID_CLIPBOARD_DIB,
-				  MF_BYCOMMAND | MF_UNCHECKED | MF_GRAYED | MF_DISABLED);
+				  MF_BYCOMMAND | ( (m_clipboard.settings.m_nLimitDIB > 0) ? MF_CHECKED : MF_UNCHECKED));
 
 	EnableMenuItem(m_hPopupMenuClipboard,
 				  ID_ENABLE_CLIPBOARD,
@@ -1725,7 +1725,7 @@ void ClientConnection::UpdateMenuItems()
 
 	EnableMenuItem(m_hPopupMenuClipboardFormats,
 				  ID_CLIPBOARD_DIB,
-				  MF_DISABLED);
+				  (m_opts->m_ViewOnly || m_opts->m_DisableClipboard || !m_clipboard.settings.m_bSupportsEx || !(m_clipboard.settings.m_remoteCaps & clipDIB)) ? MF_DISABLED : MF_ENABLED);
 
 	EnableMenuItem(m_hPopupMenuClipboard,
 				  ID_CLIPBOARD_RECV,
@@ -3210,7 +3210,7 @@ void ClientConnection::Authenticate(std::vector<CARD32>& current_auth)
 			_snwprintf_s(msg, _countof(msg), _TRUNCATE,
 				L"Authentication failed for %s:%d.\n\nDo you want to remove the saved credentials from Credential Manager?",
 				m_host, m_port);
-			if (MessageBoxW(m_hwndMain, msg, L"UltraVNC Viewer - Authentication", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
+			if (MessageBoxW(m_hwndMain, msg, L"TachyonDesk Viewer - Authentication", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
 			{
 				CredentialManager::DeleteVncPassword(m_host, m_port);
 				CredentialManager::DeleteMsLogonPassword(m_host, m_port);
@@ -5774,7 +5774,7 @@ void ClientConnection::ShowConnInfo()
 		kbdname,
 		m_pDSMPlugin->IsEnabled() ? m_pDSMPlugin->GetPluginName() : "",
 		m_pDSMPlugin->IsEnabled() ? m_pDSMPlugin->GetPluginVersion() : "");
-	yesUVNCMessageBox(m_hInstResDLL, m_hwndMain, buf, L"UltraVNC Viewer - Connection Informations", MB_ICONINFORMATION);
+	yesUVNCMessageBox(m_hInstResDLL, m_hwndMain, buf, L"TachyonDesk Viewer - Connection Information", MB_ICONINFORMATION);
 }
 
 // ********************************************************************
@@ -7020,6 +7020,7 @@ void ClientConnection::ReadServerCutText()
 				{
 					omni_mutex_lock l(m_clipMutex);
 					m_clipboard.settings.HandleCapsPacket(extendedClipboardDataMessage, true);
+					LoadClipboardPreferences();
 
 					//adzm 2010-09
 					//UpdateRemoteClipboardCaps();
@@ -8314,7 +8315,7 @@ LRESULT CALLBACK ClientConnection::GTGBS_StatusProc(HWND hwnd, UINT iMsg, WPARAM
 
 			char version[50]{};
 			char title[256]{};
-			strcpy_s(title, "UltraVNC Viewer - ");
+			strcpy_s(title, "TachyonDesk Viewer - ");
 			strcat_s(title, GetVersionFromResource(version));
 			SetDlgItemTextA(hwnd, IDC_UVVERSION, title);
 
@@ -8714,11 +8715,11 @@ LRESULT CALLBACK ClientConnection::WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, 
 						if (removedVnc || removedMs)
 						{
 							vnclog.Print(0, _T("Cleared saved password(s) from Credential Manager for %s:%d\n"), _this->m_host, _this->m_port);
-							MessageBoxW(hwnd, L"Saved password(s) removed from Credential Manager.", L"UltraVNC Viewer", MB_OK | MB_ICONINFORMATION);
+							MessageBoxW(hwnd, L"Saved password(s) removed from Credential Manager.", L"TachyonDesk Viewer", MB_OK | MB_ICONINFORMATION);
 						}
 						else
 						{
-							MessageBoxW(hwnd, L"No saved password was found for this connection.", L"UltraVNC Viewer", MB_OK | MB_ICONINFORMATION);
+							MessageBoxW(hwnd, L"No saved password was found for this connection.", L"TachyonDesk Viewer", MB_OK | MB_ICONINFORMATION);
 						}
 						return 0;
 					}
@@ -9162,6 +9163,15 @@ LRESULT CALLBACK ClientConnection::WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, 
 						_this->UpdateRemoteClipboardCaps(true);
 						//_this->UpdateMenuItems(); // Handled in WM_INITMENUPOPUP
 						break;
+					case ID_CLIPBOARD_DIB:
+						_this->m_clipboard.settings.m_nLimitDIB =
+							_this->m_clipboard.settings.m_nLimitDIB == 0 ?
+								(_this->m_clipboard.settings.m_nRequestedLimitDIB == 0 ?
+									ClipboardSettings::defaultLimitDIB
+								: _this->m_clipboard.settings.m_nRequestedLimitDIB)
+							: 0;
+						_this->UpdateRemoteClipboardCaps(true);
+						break;
 					case ID_CLIPBOARD_SEND:
 						_this->UpdateRemoteClipboard(clipProvide | clipText | clipRTF | clipHTML | clipDIB);
 						break;
@@ -9330,7 +9340,7 @@ LRESULT CALLBACK ClientConnection::WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, 
 							char temp[10];
 							wchar_t wtext[150];
 							_itoa(wParam,temp,10);
-							_snwprintf_s(wtext,150,_TRUNCATE,L"UltraVNC Viewer - Connection dropped, trying to reconnect (%hs)",temp);
+							_snwprintf_s(wtext,150,_TRUNCATE,L"TachyonDesk Viewer - Connection dropped, trying to reconnect (%hs)",temp);
 							SetWindowTextW(_this->m_hwndMain, wtext);
 							_this->m_opts->m_NoStatus = true;
 							_this->SuspendThread();

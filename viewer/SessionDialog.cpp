@@ -198,7 +198,7 @@ BOOL CALLBACK SessDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		helper::SafeSetWindowUserData(hwnd, lParam);
 		char cver[50]{};
 		wchar_t title[256]{};
-		wcscpy_s(title, _countof(title), L"UltraVNC Viewer -");
+		wcscpy_s(title, _countof(title), L"TachyonDesk Viewer -");
 		wchar_t wver[50]{};
 		MultiByteToWideChar(CP_ACP, 0, GetVersionFromResource(cver), -1, wver, _countof(wver));
 		wcscat_s(title, _countof(title), wver);
@@ -327,10 +327,10 @@ BOOL CALLBACK SessDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (_this->m_pCC->LoadConnection(szFileName, true) != -1)
 			{
 				TCHAR szHost[250];
-				if (_this->m_pCC->m_port == 5900)
+				if (_this->m_pCC->m_port == RFB_PORT_OFFSET)
 					_tcscpy_s(szHost, _countof(szHost), _this->m_pCC->m_host);
-				else if (_this->m_pCC->m_port > 5900 && _this->m_pCC->m_port <= 5999)
-					_sntprintf_s(szHost, _countof(szHost), _TRUNCATE, _T("%s:%d"), _this->m_pCC->m_host, _this->m_pCC->m_port - 5900);
+				else if (_this->m_pCC->m_port > RFB_PORT_OFFSET && _this->m_pCC->m_port <= (RFB_PORT_OFFSET + 99))
+					_sntprintf_s(szHost, _countof(szHost), _TRUNCATE, _T("%s:%d"), _this->m_pCC->m_host, _this->m_pCC->m_port - RFB_PORT_OFFSET);
 				else
 					_sntprintf_s(szHost, _countof(szHost), _TRUNCATE, _T("%s::%d"), _this->m_pCC->m_host, _this->m_pCC->m_port);
 
@@ -370,7 +370,7 @@ BOOL CALLBACK SessDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				swprintf_s(fname, _countof(fname), L"%.15s-%d.vnc", _this->m_host_dialog, (disp > 0 && disp < 100) ? disp : _this->m_port);
 				wchar_t buffer[_MAX_PATH];
 				_this->getAppData(buffer);
-				wcscat_s(buffer, _countof(buffer), L"\\UltraVNC");
+				wcscat_s(buffer, _countof(buffer), L"\\TachyonDesk");
 				_wmkdir(buffer);
 				wcscat_s(buffer, _countof(buffer), L"\\");
 				wcscat_s(buffer, _countof(buffer), fname);
@@ -550,10 +550,10 @@ void SessionDialog::InitDlgProc(bool loadhost, bool initMruNeeded)
 	if (!setdefaults) {
 		if (loadhost && (m_pCC->m_port != 0 || _tcslen(m_pCC->m_host) != 0)) {
 			TCHAR szHost[250];
-			if (m_pCC->m_port == 5900)
+			if (m_pCC->m_port == RFB_PORT_OFFSET)
 				_tcscpy_s(szHost, _countof(szHost), m_pCC->m_host);
-			else if (m_pCC->m_port > 5900 && m_pCC->m_port <= 5999)
-				_sntprintf_s(szHost, _countof(szHost), _TRUNCATE, _T("%s:%d"), m_pCC->m_host, m_pCC->m_port - 5900);
+			else if (m_pCC->m_port > RFB_PORT_OFFSET && m_pCC->m_port <= (RFB_PORT_OFFSET + 99))
+				_sntprintf_s(szHost, _countof(szHost), _TRUNCATE, _T("%s:%d"), m_pCC->m_host, m_pCC->m_port - RFB_PORT_OFFSET);
 			else
 				_sntprintf_s(szHost, _countof(szHost), _TRUNCATE, _T("%s::%d"), m_pCC->m_host, m_pCC->m_port);
 			SetDlgItemText(hwnd, IDC_HOSTNAME_EDIT, szHost);
@@ -782,7 +782,7 @@ bool SessionDialog::connect(HWND hwnd)
 
 	swprintf_s(fname, _countof(fname), L"%.15s-%d.vnc", m_host_dialog, (disp > 0 && disp < 100) ? disp : m_port);
 	getAppData(buffer);
-	wcscat_s(buffer, _countof(buffer), L"\\UltraVNC");
+	wcscat_s(buffer, _countof(buffer), L"\\TachyonDesk");
 	_wmkdir(buffer);
 	wcscat_s(buffer, _countof(buffer), L"\\");
 	wcscat_s(buffer, _countof(buffer), fname);

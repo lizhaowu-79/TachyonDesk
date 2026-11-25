@@ -4844,7 +4844,7 @@ BOOL CALLBACK FileTransfer::FileTransferDlgProc(  HWND hWnd,  UINT uMsg,  WPARAM
 			wchar_t szTitleW[lTitleBufSize];
 			_tcsncpy_s(szRemoteNameW, lTitleBufSize, l_this->m_pCC->m_desktopName, _TRUNCATE);
 			szRemoteNameW[lTitleBufSize-1] = L'\0';
-			_snwprintf_s(szTitleW, lTitleBufSize, _TRUNCATE, L" %s < %s>  -  UltraVNC", sz_H35, szRemoteNameW);
+			_snwprintf_s(szTitleW, lTitleBufSize, _TRUNCATE, L" %s < %s>  -  TachyonDesk", sz_H35, szRemoteNameW);
 			SetWindowTextW(hWnd, szTitleW);
 
 			// Create all the columns of the Files ListViews
